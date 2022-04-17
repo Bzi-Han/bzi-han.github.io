@@ -6,7 +6,7 @@
   <link href="http://example.com/atom.xml" rel="self"/>
   
   <link href="http://example.com/"/>
-  <updated>2022-03-30T02:06:52.212Z</updated>
+  <updated>2022-04-17T11:50:41.590Z</updated>
   <id>http://example.com/</id>
   
   <author>
@@ -15,6 +15,27 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>[学习] 整理并记录一下Markdown的基本语法</title>
+    <link href="http://example.com/2022/04/17/%E5%AD%A6%E4%B9%A0-%E6%95%B4%E7%90%86%E5%B9%B6%E8%AE%B0%E5%BD%95%E4%B8%80%E4%B8%8BMarkdown%E7%9A%84%E5%9F%BA%E6%9C%AC%E8%AF%AD%E6%B3%95/"/>
+    <id>http://example.com/2022/04/17/%E5%AD%A6%E4%B9%A0-%E6%95%B4%E7%90%86%E5%B9%B6%E8%AE%B0%E5%BD%95%E4%B8%80%E4%B8%8BMarkdown%E7%9A%84%E5%9F%BA%E6%9C%AC%E8%AF%AD%E6%B3%95/</id>
+    <published>2022-04-17T11:00:04.000Z</published>
+    <updated>2022-04-17T11:50:41.590Z</updated>
+    
+    <content type="html"><![CDATA[<p>Markdown 是一种轻量级标记语言，它允许人们使用易读易写的纯文本格式编写文档，Markdown文件的后缀名便是“.md”。</p><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>本文仅供学习探讨之用，如果侵犯了您的权益请联系我删除。</p><h2 id="普通文字"><a href="#普通文字" class="headerlink" title="普通文字"></a>普通文字</h2><p>语法符号：<code>无</code></p><p>普通文字</p><hr><h2 id="标题"><a href="#标题" class="headerlink" title="标题"></a>标题</h2><p>语法符号：<code># == --</code></p><!-- > # 一级标题> ## 二级标题> ### 三级标题> #### 四级标题> ##### 五级标题> ###### 六级标题>> 可选语法一级标题> ==> 可选语法二级标题> -- --><p><img src="/images/1650196000.jpg" alt="标题" title="标题"></p><hr><h2 id="段落"><a href="#段落" class="headerlink" title="段落"></a>段落</h2><p>语法符号：<code>\n\n</code></p><p>段落文本，每段之间用空行进行分隔。</p><p>I think maybe I should use it to format all of my documents.</p><hr><h2 id="换行"><a href="#换行" class="headerlink" title="换行"></a>换行</h2><p>语法符号：<code>两个空格</code></p><p>使用空格进行换行<br>这是第二行</p><p>使用<code>&lt;br&gt;</code>进行换行<br /><br>这是第二行</p><hr><h2 id="强调与斜体"><a href="#强调与斜体" class="headerlink" title="强调与斜体"></a>强调与斜体</h2><p>语法符号：<code>*</code></p><p><em>斜体</em><br><strong>强调</strong><br><em><strong>强调且斜体</strong></em></p><hr><h2 id="引用"><a href="#引用" class="headerlink" title="引用"></a>引用</h2><p>语法符号：<code>&gt;</code></p><blockquote><p>普通引用</p><p><em>引用中使用其他元素</em></p><blockquote><p>嵌套引用</p><blockquote><p>嵌套引用</p><blockquote><p>嵌套引用</p></blockquote></blockquote></blockquote><p><strong>多段落引用</strong></p></blockquote><hr><h2 id="列表"><a href="#列表" class="headerlink" title="列表"></a>列表</h2><p>语法符号：<code>1-inf +</code></p><ol><li>有序列表第一个元素<ol><li>有序列表嵌套</li></ol></li><li>有序列表第二个元素<ul><li>无序列表第一个元素<ul><li>无序列表嵌套</li></ul></li><li>无序列表第二个元素</li></ul></li><li>有序列表第三个元素</li></ol><hr><h2 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h2><p>语法符号：<code> ` 每行缩进四个空格</code></p><p><code>使用 ` 创建的代码块</code></p><pre><code>使用缩进四个空格创建的代码块可以多行使用  </code></pre><p>可以在段落文本中使用<code>`</code>来创建局部代码块，比<code>如这</code>样。</p><hr><h2 id="分隔线"><a href="#分隔线" class="headerlink" title="分隔线"></a>分隔线</h2><p>语法符号：<code>---</code></p><hr><h2 id="删除线"><a href="#删除线" class="headerlink" title="删除线"></a>删除线</h2><p>语法符号：<code>~~内容~~</code></p><p><del>我喜欢学习</del></p><hr><h2 id="待办事项"><a href="#待办事项" class="headerlink" title="待办事项"></a>待办事项</h2><p>语法符号：<code>- []</code></p><ul><li><input checked="" disabled="" type="checkbox"> 待办事项1</li><li><input disabled="" type="checkbox"> 待办事项2</li></ul><hr><h2 id="链接"><a href="#链接" class="headerlink" title="链接"></a>链接</h2><p>语法符号：<code>[超链接显示名](超链接地址 &quot;超链接title&quot;)</code></p><p>这是一个链接 <a href="https://markdown.com.cn/" title="最好的markdown教程">Markdown语法</a>。</p><p>可以使用<code>&lt;&gt;</code>括起来链接或邮箱地址：<a href="mailto:&#x72;&#x6f;&#115;&#101;&#x62;&#x7a;&#x69;&#x40;&#x66;&#111;&#x78;&#109;&#x61;&#x69;&#108;&#x2e;&#x63;&#x6f;&#109;">&#x72;&#x6f;&#115;&#101;&#x62;&#x7a;&#x69;&#x40;&#x66;&#111;&#x78;&#109;&#x61;&#x69;&#108;&#x2e;&#x63;&#x6f;&#109;</a></p><p><a href="https://bzi-han.github.io/" title="Bzi-Han&#39;s blog">占位链接</a></p><p>引用导航1<a href="%E8%BF%99%E9%87%8C%E5%8F%AF%E4%BB%A5%E5%86%99%E5%9C%A8%E9%A1%B5%E9%9D%A2%E4%B8%AD%E7%9A%84%E4%BB%BB%E4%BD%95%E5%9C%B0%E6%96%B9">^1</a><br>引用导航2<a href="https://bzi-han.github.io/">^2</a></p><hr><h2 id="图片"><a href="#图片" class="headerlink" title="图片"></a>图片</h2><p>语法符号：<code>![图片alt](图片链接 &quot;图片title&quot;)</code></p><p>只显示图片<br><img src="https://s1.ax1x.com/2020/08/27/dfT9Dx.gif" alt="两次元image" title="image"></p><p>链接与图片并用，点击图片可跳转<br><a href="https://baike.baidu.com/item/ASCII/309296"><img src="https://s1.ax1x.com/2022/04/17/LU1KxI.md.png" alt="ASCII" title="ascii"></a></p><hr><h2 id="转义"><a href="#转义" class="headerlink" title="转义"></a>转义</h2><p>语法符号：<code>\ &amp;xxx;</code></p><p>&amp;nbsp;普通空格 <code>&amp;nbsp;</code><br>&amp;ensp;半角空格 <code>&amp;ensp;</code><br>&amp;emsp;全角空格 <code>&amp;emsp;</code></p><p>* 这里使用<code>\</code>转义了<code>*</code>符号</p><hr><h2 id="表格"><a href="#表格" class="headerlink" title="表格"></a>表格</h2><p>语法符号：<code>| : -</code></p><table><thead><tr><th align="center">第一列</th><th align="left">第二列</th><th align="right">第三列</th></tr></thead><tbody><tr><td align="center">center aligment</td><td align="left">left aligment</td><td align="right">right aligment</td></tr><tr><td align="center">data1</td><td align="left">data2</td><td align="right">data3</td></tr><tr><td align="center">data1</td><td align="left">data2</td><td align="right">data3</td></tr><tr><td align="center">data1</td><td align="left">data2</td><td align="right">data3</td></tr><tr><td align="center">data1</td><td align="left">data2</td><td align="right">data3</td></tr><tr><td align="center">data1</td><td align="left">data2</td><td align="right">data3</td></tr></tbody></table><hr><h2 id="内嵌HTML"><a href="#内嵌HTML" class="headerlink" title="内嵌HTML"></a>内嵌HTML</h2><p>代码</p><pre><code>&lt;i&gt;label i&lt;/i&gt;  &lt;a src=&quot;https://bzi-han.github.io/&quot; style=&quot;color:#dd001b;cursor:pointer;&quot;&gt;超链接&lt;/a&gt;</code></pre><p>效果</p><p><i>label i</i><br><a src="https://bzi-han.github.io/" style="color:#dd001b;cursor:pointer;">超链接</a></p>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;p&gt;Markdown 是一种轻量级标记语言，它允许人们使用易读易写的纯文本格式编写文档，Markdown文件的后缀名便是“.md”。&lt;/p&gt;
+&lt;h2 id=&quot;前言&quot;&gt;&lt;a href=&quot;#前言&quot; class=&quot;headerlink&quot; title=&quot;前言&quot;&gt;&lt;/a&gt;前言&lt;/h2&gt;&lt;</summary>
+      
+    
+    
+    
+    
+  </entry>
   
   <entry>
     <title>Hello World</title>
