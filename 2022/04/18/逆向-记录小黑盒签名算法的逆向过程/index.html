@@ -181,9 +181,9 @@ if ( v11 &amp;&amp; v12 &amp;&amp; v13 )
 <p>接下来是<code>sub_2BF0</code>，进入之后看到做了一些没看懂的操作</p>
 <p><img src="/images/1650222088.jpg" alt="sub_2BF0"></p>
 <p><a target="_blank" rel="noopener" href="https://developer.arm.com/architectures/instruction-sets/intrinsics/#q=veorq_s8"><img src="/images/1650222089.jpg" alt="veorq_s8"></a></p>
-<p>查了一下指令的<a target="_blank" rel="noopener" href="https://developer.arm.com/architectures/instruction-sets/intrinsics/#q=veorq_s8" title="ARM SIMD指令集文档">文档</a>，原来是对一个向量进行异或操作，那就没事了，我们继续。<br>再往下之后又进行了两次函数的调用，这个函数就是<code>sub_2D50</code>。没办法，点进去看看。<br>没看到有什么，让后往下滑到底，可以看到返回值是个20字节的数组</p>
+<p>查了一下指令的<a target="_blank" rel="noopener" href="https://developer.arm.com/architectures/instruction-sets/intrinsics/#q=veorq_s8" title="ARM SIMD指令集文档">文档</a>，原来是对一个向量进行异或操作，那就没事了，我们继续。<br>再往下之后又进行了两次函数的调用，这个函数就是<code>sub_2D50</code>。没办法，点进去看看。<br>好像没看到有什么…<br>往下滑到底看一下，这时可以看到返回值是个20字节的数组</p>
 <p><img src="/images/1650222090.jpg" alt="result"></p>
-<p>说到20字节的返回值能有什么呢，第一反应就是<code>sha1</code>啊。不过这里好像也没有看到有<code>initialize value</code>…<br>说到这里,我翻看了《加密与跳楼》第6章 找参数。</p>
+<p>说到20字节的返回值能有什么呢，第一反应就是<code>sha1</code>啊。不过这里好像也没有看到有<code>initialize values</code>…<br>说到这里，我翻看了《加密与跳楼（第4版）》第6章 找<code>sha1</code>的初始参数。</p>
 <p><img src="/images/1650222091.jpg" alt="book"><br><img src="/images/1650222096.jpg" alt="book"></p>
 <p>嗯…确实没有，直到我把它的参数放入计算器</p>
 <p><img src="/images/1650222092.jpg" alt="calc"></p>
