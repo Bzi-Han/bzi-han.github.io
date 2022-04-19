@@ -108,7 +108,7 @@ if ( v11 &amp;&amp; v12 &amp;&amp; v13 )
     v73 = 0u;
     dword_6118 = (unsigned int)(v36 + v16) &gt;&gt; 24;
     dword_611C = (v36 + v16) &amp; 0xFF;
-    v87 = (unsigned int)(v36 + v16) &gt;&gt; 24;      // 往向量中存储当前时间以供稍后hashSign函数进行计算，时间是转换成大端存储的时间
+    v87 = (unsigned int)(v36 + v16) &gt;&gt; 24;      // 往向量中存储当前时间以供稍后sub_2BF0函数进行计算，时间是转换成大端存储的时间
     v88 = (unsigned int)(v36 + v16) &gt;&gt; 16;
     v89 = (unsigned __int16)(v36 + v16) &gt;&gt; 8;
     v70 = 0u;
@@ -124,7 +124,7 @@ if ( v11 &amp;&amp; v12 &amp;&amp; v13 )
     dword_6124 = BYTE3(v71);
     dword_6108 = BYTE3(v71) &amp; 0xF;
     dword_610C = v41;
-    v42 = bswap32(v41);                         // 字节反转的result[1], type uint64_t
+    v42 = bswap32(v41);
     v43 = v42 &amp; 0x7FFFFFFF;
     dword_6104 = (v42 &amp; 0x7FFFFFFF) / 0x271F35A0;
     v67 = 15540725856023089LL;
@@ -181,19 +181,19 @@ if ( v11 &amp;&amp; v12 &amp;&amp; v13 )
 <p>接下来是<code>sub_2BF0</code>，进入之后看到做了一些没看懂的操作</p>
 <p><img src="/images/1650222088.jpg" alt="sub_2BF0"></p>
 <p><a target="_blank" rel="noopener" href="https://developer.arm.com/architectures/instruction-sets/intrinsics/#q=veorq_s8"><img src="/images/1650222089.jpg" alt="veorq_s8"></a></p>
-<p>查了一下指令的<a target="_blank" rel="noopener" href="https://developer.arm.com/architectures/instruction-sets/intrinsics/#q=veorq_s8" title="simd指令集文档">文档</a>，原来是对一个向量进行异或操作，那就没事了，我们继续。<br>再往下之后又进行了两次函数的调用，这个函数就是<code>sub_2D50</code>。没办法，点进去看看。<br>没看到有什么，让后往下滑到底，可以看到返回值是个20字节的数组</p>
+<p>查了一下指令的<a target="_blank" rel="noopener" href="https://developer.arm.com/architectures/instruction-sets/intrinsics/#q=veorq_s8" title="ARM SIMD指令集文档">文档</a>，原来是对一个向量进行异或操作，那就没事了，我们继续。<br>再往下之后又进行了两次函数的调用，这个函数就是<code>sub_2D50</code>。没办法，点进去看看。<br>没看到有什么，让后往下滑到底，可以看到返回值是个20字节的数组</p>
 <p><img src="/images/1650222090.jpg" alt="result"></p>
 <p>说到20字节的返回值能有什么呢，第一反应就是<code>sha1</code>啊。不过这里好像也没有看到有<code>initialize value</code>…<br>说到这里,我翻看了《加密与跳楼》第6章 找参数。</p>
-<p><img src="/images/1650222091.jpg" alt="result"></p>
+<p><img src="/images/1650222091.jpg" alt="book"><br><img src="/images/1650222096.jpg" alt="book"></p>
 <p>嗯…确实没有，直到我把它的参数放入计算器</p>
-<p><img src="/images/1650222092.jpg" alt="result"></p>
+<p><img src="/images/1650222092.jpg" alt="calc"></p>
 <p>好家伙，原来是这样！打上注释。</p>
 <p>突然想发个图：<code>TNND，给我玩阴滴是吧.jpg</code></p>
 <p>接下来是<code>sub_23FC</code>，进入之后发现就是对我们传进去的参数进行一堆的运算，然后原路返回，那就没事了，打上注释。</p>
 <h2 id="Frida"><a href="#Frida" class="headerlink" title="Frida"></a>Frida</h2><p>现在来<code>Hook</code>一下我们上面分析的几个函数</p>
 <p><img src="/images/1650222093.jpg" alt="frida"></p>
 <p><img src="/images/1650222094.jpg" alt="hookresult"></p>
-<p><img src="/images/1650222094.jpg" alt="hookresult"></p>
+<p><img src="/images/1650222095.jpg" alt="hookresult"></p>
 <p>没得毛病，进入下一步</p>
 <p><img src="/images/sticker_nice.jpg" alt="nice"></p>
 <h2 id="计算过程"><a href="#计算过程" class="headerlink" title="计算过程"></a>计算过程</h2><p>总结一下<code>hkey</code>的计算过程大概就是这样</p>
