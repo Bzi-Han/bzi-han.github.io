@@ -1,0 +1,61 @@
+<!DOCTYPE html><html class="appearance-auto" lang="zh-CN"><head><meta charset="UTF-8"><title>[项目] Taskcloud基本重构完成与后续填坑记录计划贴</title><meta name="description" content="Bzi-Han's blog, Bzi-Han的博客"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, initial-scale=1"><!-- Google Analytics --><!-- End Google Analytics -->
+<!-- Baidu Analytics --><!-- End Baidu Analytics --><link rel="icon" href="/images/favicon.png"><link rel="stylesheet" href="/style/common/bulma.css"><link rel="stylesheet" href="/style/base.css"><link rel="stylesheet" href="/style/common/helper.css"><script src="/js/common.js"></script><link rel="stylesheet" href="/style/post.css"><link rel="stylesheet" href="/style/themes/highlight-theme-light.css"><script src="/js/highlight.pack.js"></script><meta name="description" content="记录以防忘记。
+前言本文仅供学习探讨之用，如果侵犯了您的权益请联系我删除。
+项目地址本文只做简要介绍，如果有兴趣还请移步主项目阅读README.md。
+主项目https://github.com/Bzi-Han/taskcloud
+子项目前端 vue3 https://github.com/Bzi-Han/taskcloud_web
+后端 java https://github.com/Bzi-Han/taskcloud_backend
+核心 c++ https://github.com/Bzi-Han/taskcloud_core
+基本介绍云任务是一套定时任务处理程序，用户通过与前端交互添加需要执行的任务到指定的任务包中，并设定任务包的激活状态与定时启动时间(可设定是否只运行一次或每天都运行)。除了用户手.."><meta name="generator" content="Hexo 6.1.0"><link rel="alternate" href="/atom.xml" title="Bzi-Han的博客" type="application/atom+xml">
+</head><body class="is-flex is-flex-direction-column"><header class="header-widget is-flex-shrink-0 is-hidden-mobile"><div class="container is-fullhd is-flex is-justify-content-space-between is-align-items-center is-full-height"><section class="is-hidden-mobile is-flex-shrink-0"><h2><a href="/">Bzi-Han's blog</a></h2></section><h3 class="is-hidden-mobile is-family-serif is-full-height is-flex is-align-items-center is-flex-shrink-0"><div class="is-full-height" id="postTopic"><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">[项目] Taskcloud基本重构完成与后续填坑记录计划贴</p><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">点击返回顶部</p></div></h3><aside class="is-flex-shrink-0"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></aside></div></header><header class="is-flex header-widget is-flex-shrink-0 is-align-items-center is-justify-content-center is-hidden-tablet"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></header><main><main class="container is-max-widescreen content section post-page pt-4 px-4"><div class="columns is-flex-desktop is-justify-content-center is-flex-direction-row-reverse"><div class="column is-3 is-hidden-mobile"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%A1%B9%E7%9B%AE%E5%9C%B0%E5%9D%80"><span class="toc-text">项目地址</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BB%E9%A1%B9%E7%9B%AE"><span class="toc-text">主项目</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AD%90%E9%A1%B9%E7%9B%AE"><span class="toc-text">子项目</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9F%BA%E6%9C%AC%E4%BB%8B%E7%BB%8D"><span class="toc-text">基本介绍</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9E%B6%E6%9E%84"><span class="toc-text">架构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9F%BA%E4%BA%8EDocker%E6%9E%84%E5%BB%BA%E6%A0%B8%E5%BF%83%E9%A1%B9%E7%9B%AE%E7%9A%84%E7%BC%96%E8%AF%91%E7%8E%AF%E5%A2%83"><span class="toc-text">基于Docker构建核心项目的编译环境</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#TODO"><span class="toc-text">TODO</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BB%93%E8%AF%AD"><span class="toc-text">结语</span></a></li></ol></div><div class="column is-9"><header class="my-4"></header><h1 class="mt-0 mb-1 is-family-serif" id="postTitle">[项目] Taskcloud基本重构完成与后续填坑记录计划贴</h1><time class="has-text-grey" datetime="2022-07-02T07:37:51.000Z">2022-07-02</time><article class="mt-2 post-content"><p>记录以防忘记。</p>
+<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>本文仅供学习探讨之用，如果侵犯了您的权益请联系我删除。</p>
+<h2 id="项目地址"><a href="#项目地址" class="headerlink" title="项目地址"></a>项目地址</h2><p>本文只做简要介绍，如果有兴趣还请移步主项目阅读<code>README.md</code>。</p>
+<h3 id="主项目"><a href="#主项目" class="headerlink" title="主项目"></a>主项目</h3><p><a target="_blank" rel="noopener" href="https://github.com/Bzi-Han/taskcloud">https://github.com/Bzi-Han/taskcloud</a></p>
+<h3 id="子项目"><a href="#子项目" class="headerlink" title="子项目"></a>子项目</h3><p><em>前端</em> <code>vue3</code> <a target="_blank" rel="noopener" href="https://github.com/Bzi-Han/taskcloud_web">https://github.com/Bzi-Han/taskcloud_web</a></p>
+<p><em>后端</em> <code>java</code> <a target="_blank" rel="noopener" href="https://github.com/Bzi-Han/taskcloud_backend">https://github.com/Bzi-Han/taskcloud_backend</a></p>
+<p><em>核心</em> <code>c++</code> <a target="_blank" rel="noopener" href="https://github.com/Bzi-Han/taskcloud_core">https://github.com/Bzi-Han/taskcloud_core</a></p>
+<h2 id="基本介绍"><a href="#基本介绍" class="headerlink" title="基本介绍"></a>基本介绍</h2><p>云任务是一套定时任务处理程序，用户通过与前端交互添加需要执行的任务到指定的任务包中，并设定任务包的激活状态与定时启动时间(可设定是否只运行一次或每天都运行)。除了用户手动投递的任务包外，系统会在第一次启动时与每天<code>00:00</code>时自动分发当天需要执行的任务。</p>
+<p>任务执行所用的脚本可以是<code>Lua</code> <code>Python</code> <code>Javascript</code>这三种语言编写的代码，可以使用语言自带的各种工具函数和此程序导出的<a target="_blank" rel="noopener" href="https://github.com/Bzi-Han/taskcloud/blob/main/docs/APIDocumentaion.md">API</a>接口来进行编程，任务执行的结果与执行过程中的各种日志与报错日志均可在前端控制台中看到，可作为脚本执行问题的参考数据。</p>
+<p>若是任务的开发者还可以在帮助中心发布帮助文档，以更好地帮助用户使用。</p>
+<h2 id="架构"><a href="#架构" class="headerlink" title="架构"></a>架构</h2><p>整个项目的架构图</p>
+<p><img src="/images/1650222128.jpg" alt="项目架构图"></p>
+<p>数据库的结构图</p>
+<p><img src="/images/1650222129.png" alt="数据库结构图"></p>
+<h2 id="基于Docker构建核心项目的编译环境"><a href="#基于Docker构建核心项目的编译环境" class="headerlink" title="基于Docker构建核心项目的编译环境"></a>基于Docker构建核心项目的编译环境</h2><p>因为<a target="_blank" rel="noopener" href="https://github.com/Bzi-Han/taskcloud_core">核心项目</a>使用了<code>CMake</code>来帮助构建，所以理论上可以跨<code>Windows</code>与<code>Linux</code>进行编译(没有试过<code>Mac</code>)，但不能保证一定不会遇到问题，因此这里仅作为一个备选解决手段。</p>
+<p>也可以作为构建基于<code>docker-debian</code> <code>clang-14</code>编译环境的参考吧。</p>
+<ol>
+<li>确保<code>docker</code>服务运行中。</li>
+<li>执行<code>docker run -d --name taskcloud_builder -it debian /bin/bash</code>创建基本容器。如果需要 <strong>ssh</strong> 服务的话可再添加<code>-p 外部端口:内部端口</code>进行端口映射，后续再安装 <strong>ssh</strong> 服务即可，但我这里就不需要了。</li>
+<li>执行<code>docker exec -it taskcloud_builder /bin/bash</code>进入容器命令行。</li>
+<li>执行<code>cp /etc/apt/sources.list /etc/apt/sources.list.bak</code>备份 <strong>apt</strong> 源。</li>
+<li>执行<code>sed -i &#39;s/deb.debian.org/mirrors.ustc.edu.cn/g&#39; /etc/apt/sources.list</code>替换 <strong>apt</strong> 源为中科大源，可自行设置其他源。</li>
+<li>执行<code>sed -i &#39;s|security.debian.org/debian-security|mirrors.ustc.edu.cn/debian-security|g&#39; /etc/apt/sources.list</code>替换 <strong>apt-security</strong> 源为中科大源，可自行设置其他源。</li>
+<li>执行<code>apt-get update</code>更新源。</li>
+<li>执行<code>apt-get install wget -y</code>安装 <strong>wget</strong> 工具。</li>
+<li>执行<code>apt install lsb-release wget software-properties-common -y</code>安装 <strong>lsb-release</strong> 为后续安装提供支持。</li>
+<li>执行<code>apt install gnupg -y</code>安装 <strong>gnupg</strong> 为后续安装提供支持，否则会出现<code>Cannot write to &#39;-&#39; (Broken pipe).</code>的情况。</li>
+<li>执行<code>cd /tmp &amp;&amp; wget https://apt.llvm.org/llvm.sh</code>切换到 <strong>tmp</strong> 目录同时下载 <strong>clang</strong> 安装脚本。</li>
+<li>执行<code>chmod +x llvm.sh &amp;&amp; ./llvm.sh 14 all</code>添加执行权限以及直接运行脚本安装 <strong>clang-14</strong> 所有工具链。</li>
+<li>安装完成后执行<code>update-alternatives --install /usr/bin/clang clang /usr/bin/clang-14 1 --slave /usr/bin/clang++ clang++ /usr/bin/clang++-14</code>来设置默认的 <strong>clang</strong> 与 <strong>clang++</strong> 。</li>
+<li>执行<code>apt-get install python3-dev -y</code>安装 <strong>python3-dev</strong> 提供所需的编译环境之一。</li>
+<li>执行<code>apt-get install libssl-dev -y</code>安装 <strong>libssl-dev</strong> 提供所需的编译环境之一。</li>
+<li>环境搭建完毕，可以开始编译项目了。</li>
+</ol>
+<h2 id="TODO"><a href="#TODO" class="headerlink" title="TODO"></a>TODO</h2><ul>
+<li><input disabled="" type="checkbox"> 添加<code>crypto.utf8ToGBK</code>函数</li>
+<li><input disabled="" type="checkbox"> 添加<code>crypto.gbkToUTF8</code>函数</li>
+<li><input disabled="" type="checkbox"> 添加<code>crypto.urlEncode</code>函数</li>
+<li><input disabled="" type="checkbox"> 添加<code>crypto.urlDecode</code>函数</li>
+<li><input disabled="" type="checkbox"> 添加<code>crypto.rsaEncrypt</code>函数</li>
+<li><input disabled="" type="checkbox"> 添加<code>crypto.rsaDecrypt</code>函数</li>
+<li><input disabled="" type="checkbox"> 修改默认管理员账号密码</li>
+<li><input disabled="" type="checkbox"> 提醒使用<code>java -jar</code>运行后端时添加<code>-Dfile.encoding=UTF-8</code>防止默认编码导致的乱码问题</li>
+<li><input disabled="" type="checkbox"> 修复后端<code>python</code>与<code>javascript</code>审核错误问题</li>
+<li><input disabled="" type="checkbox"> 添加<code>system</code>模块与<code>system.delay</code>函数</li>
+<li><input disabled="" type="checkbox"> 添加<code>requests.put</code>函数</li>
+<li><input disabled="" type="checkbox"> 添加<code>requests.delete</code>函数</li>
+</ul>
+<h2 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h2><p>暂时告一段落了，填坑的话还是慢慢来吧。<br><img src="/images/sticker_darksee.jpg" alt="暗中观察"></p>
+<p>那就这样了，有缘再见~
+ </p>
+</article><section class="jump-container is-flex is-justify-content-space-between my-6"><!-- em is empty placeholder--><em></em><a class="button is-default" href="/2022/06/12/%E7%BC%96%E7%A8%8B-%E5%9C%A8Android-Studio%E4%B8%AD%E4%BD%BF%E7%94%A8Kotlin%E7%BC%96%E5%86%99%E4%B8%80%E4%B8%AA%E6%8E%A7%E5%88%B6%E7%94%B5%E8%84%91%E8%BF%9C%E7%A8%8B%E5%BC%80%E6%9C%BA%E7%9A%84APP-WOL%E6%8A%80%E6%9C%AF/" title="[编程] 在Android Studio中使用Kotlin编写一个控制电脑远程开机的APP(WOL技术)"><span class="has-text-weight-semibold">下一页: [编程] 在Android Studio中使用Kotlin编写一个控制电脑远程开机的APP(WOL技术)</span><i class="iconfont icon-next ml-2 has-text-grey"></i></a></section><article class="mt-6 comment-container"><script async repo="Bzi-Han/bzi-han.github.io" src="https://utteranc.es/client.js" issue-term="pathname" theme="preferred-color-scheme"></script></article></div></div></main></main><footer class="is-flex is-flex-direction-column is-align-items-center is-flex-shrink-0 is-family-serif"><section class="sns-container"><!-- Github--><a title="github" target="_blank" rel="noopener nofollow" href="//github.com/Bzi-Han"><i class="iconfont icon-github"></i></a><!-- Ins--><!-- RSS--><!-- 知乎--><!-- 领英--><!-- 脸书--></section><p><span>Copyright ©</span><span> Bzi-Han 2022</span></p><div class="is-flex is-justify-content-center is-flex-wrap-wrap"><p>Powered by Hexo &verbar;&nbsp;</p><p class="is-flex is-justify-content-center"><a title="Hexo theme author" target="_blank" rel="noopener" href="//github.com/haojen">Theme by Haojen&nbsp;</a></p><div style="margin-top: 2px"><a class="github-button" title="github-button" target="_blank" rel="noopener" href="https://github.com/haojen/hexo-theme-Claudia" data-color-scheme="no-preference: light; light: light; dark: dark;" data-show-count="true"></a></div></div><div><span></span></div></footer><script async defer src="https://buttons.github.io/buttons.js"></script><script src="/js/post.js"></script></body></html>
