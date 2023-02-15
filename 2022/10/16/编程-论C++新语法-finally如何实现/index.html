@@ -1,0 +1,311 @@
+<!DOCTYPE html><html class="appearance-auto" lang="zh-CN"><head><meta charset="UTF-8"><title>[编程] 论C++&quot;新语法&quot;-finally如何实现</title><meta name="description" content="Bzi-Han's blog, Bzi-Han的博客"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, initial-scale=1"><!-- Google Analytics --><!-- End Google Analytics -->
+<!-- Baidu Analytics --><!-- End Baidu Analytics --><link rel="icon" href="/images/favicon.png"><link rel="stylesheet" href="/style/common/bulma.css"><link rel="stylesheet" href="/style/base.css"><link rel="stylesheet" href="/style/common/helper.css"><script src="/js/common.js"></script><link rel="stylesheet" href="/style/post.css"><link rel="stylesheet" href="/style/themes/highlight-theme-light.css"><script src="/js/highlight.pack.js"></script><meta name="description" content="好用滴很！
+前言本文仅供学习探讨之用，如果侵犯了您的权益请联系我删除。
+工具
+Visual Studio Code
+
+需求分析先放一段代码我们来看一下实际操作时可能会遇到的一些场景，并分析为什么我们会需要finally语法。
+上代码
+#include &amp;lt;WinSock2.h&amp;gt;
+#include &amp;lt;Windows.h&amp;gt;
+
+#include &amp;lt;iostream&amp;gt;
+
+std::string lastErrorMessage(int code = 0)
+&amp;#123;
+    if (0 == code)
+        code = ::WSAGetLastError();
+
+    std::string result(1024, 0);
+    auto size = ::F.."><meta name="generator" content="Hexo 6.1.0"><link rel="alternate" href="/atom.xml" title="Bzi-Han的博客" type="application/atom+xml">
+</head><body class="is-flex is-flex-direction-column"><header class="header-widget is-flex-shrink-0 is-hidden-mobile"><div class="container is-fullhd is-flex is-justify-content-space-between is-align-items-center is-full-height"><section class="is-hidden-mobile is-flex-shrink-0"><h2><a href="/">Bzi-Han's blog</a></h2></section><h3 class="is-hidden-mobile is-family-serif is-full-height is-flex is-align-items-center is-flex-shrink-0"><div class="is-full-height" id="postTopic"><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">[编程] 论C++&quot;新语法&quot;-finally如何实现</p><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">点击返回顶部</p></div></h3><aside class="is-flex-shrink-0"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></aside></div></header><header class="is-flex header-widget is-flex-shrink-0 is-align-items-center is-justify-content-center is-hidden-tablet"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></header><main><main class="container is-max-widescreen content section post-page pt-4 px-4"><div class="columns is-flex-desktop is-justify-content-center is-flex-direction-row-reverse"><div class="column is-3 is-hidden-mobile"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B7%A5%E5%85%B7"><span class="toc-text">工具</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9C%80%E6%B1%82%E5%88%86%E6%9E%90"><span class="toc-text">需求分析</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AE%80%E6%98%93%E5%AE%9E%E7%8E%B0"><span class="toc-text">简易实现</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%8C%E6%95%B4%E6%94%B9%E8%BF%9B%E5%AE%9E%E7%8E%B0"><span class="toc-text">完整改进实现</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BB%93%E8%AF%AD"><span class="toc-text">结语</span></a></li></ol></div><div class="column is-9"><header class="my-4"></header><h1 class="mt-0 mb-1 is-family-serif" id="postTitle">[编程] 论C++&quot;新语法&quot;-finally如何实现</h1><time class="has-text-grey" datetime="2022-10-16T01:21:56.000Z">2022-10-16</time><article class="mt-2 post-content"><p>好用滴很！</p>
+<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>本文仅供学习探讨之用，如果侵犯了您的权益请联系我删除。</p>
+<h2 id="工具"><a href="#工具" class="headerlink" title="工具"></a>工具</h2><ol>
+<li><a target="_blank" rel="noopener" href="https://code.visualstudio.com/" title="Visual Studio Code Official">Visual Studio Code</a></li>
+</ol>
+<h2 id="需求分析"><a href="#需求分析" class="headerlink" title="需求分析"></a>需求分析</h2><p>先放一段代码我们来看一下实际操作时可能会遇到的一些场景，并分析为什么我们会需要<code>finally</code>语法。</p>
+<p>上代码</p>
+<pre><code>#include &lt;WinSock2.h&gt;
+#include &lt;Windows.h&gt;
+
+#include &lt;iostream&gt;
+
+std::string lastErrorMessage(int code = 0)
+&#123;
+    if (0 == code)
+        code = ::WSAGetLastError();
+
+    std::string result(1024, 0);
+    auto size = ::FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM, nullptr, code, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), result.data(), result.size(), nullptr);
+    result.resize(size);
+
+    return result;
+&#125;;
+
+void test01()
+&#123;
+    WSADATA wsaData&#123;&#125;;
+
+    // initialization
+    auto errorCode = ::WSAStartup(MAKEWORD(2, 2), &amp;wsaData);
+    if (errorCode)
+        throw std::runtime_error(lastErrorMessage(errorCode));
+
+    // create socket fd
+    auto fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    if (INVALID_SOCKET == fd)
+    &#123;
+        auto message = lastErrorMessage();
+        ::WSACleanup();
+        throw std::runtime_error(std::move(message));
+    &#125;
+
+    // configure server
+    SOCKADDR_IN serverConfig&#123;&#125;;
+    serverConfig.sin_family = PF_INET;
+    serverConfig.sin_addr.S_un.S_addr = inet_addr(&quot;127.0.0.1&quot;);
+    serverConfig.sin_port = htons(11451);
+
+    // connecting to the server
+    if (connect(fd, reinterpret_cast&lt;SOCKADDR *&gt;(&amp;serverConfig), sizeof(SOCKADDR)))
+    &#123;
+        auto message = lastErrorMessage();
+        ::closesocket(fd);
+        ::WSACleanup();
+        throw std::runtime_error(std::move(message));
+    &#125;
+
+    ::closesocket(fd);
+    ::WSACleanup();
+&#125;
+
+int main()
+&#123;
+    std::cout &lt;&lt; &quot;[=] start test&quot; &lt;&lt; std::endl;
+    try
+    &#123;
+        test01();
+
+        std::cout &lt;&lt; &quot;[+] test succeeded&quot; &lt;&lt; std::endl;
+    &#125;
+    catch (const std::exception &amp;e)
+    &#123;
+        std::cout &lt;&lt; &quot;[-] &quot; &lt;&lt; e.what() &lt;&lt; std::endl;
+    &#125;
+
+    return 0;
+&#125;
+</code></pre>
+<p>代码中我们以常规<code>socket</code>连接服务器的操作流程来演示。</p>
+<p>可以看到在创建socket通信句柄与连接服务器失败时我们都需要对已<code>初始化/创建</code>的资源进行释放，并且这一过程还伴随着诸多的冗余。例如<code>WSACleanup</code>函数就需要多次书写，而这还只是一个小例子，在一个庞大的系统中可能会有非常多这样的冗余。</p>
+<p>我们对三次调用<code>WSACleanup</code>的地方进行分析，不难看出其都是在当前函数即将跳出作用域时才会执行。这就让我们联想到了<code>RAII</code>对吧。</p>
+<p>而基于<code>RAII</code>实现的智能指针刚好就可以实现我们<code>finally</code>的这个想法，我们可以利用<code>std::unique_ptr</code>提供的自定义<code>deleter</code>来实现<code>finally</code>代码块。需要注意的是同为智能指针的<code>std::shared_ptr</code>与<code>std::weak_ptr</code>并不支持自定义的<code>deleter</code>，所以没法用来实现<code>finally</code>。</p>
+<h2 id="简易实现"><a href="#简易实现" class="headerlink" title="简易实现"></a>简易实现</h2><p>接下来我们先来用<code>std::unique_ptr</code>实现一个简单的<code>finally</code>，上代码</p>
+<pre><code>void test01()
+&#123;
+    WSADATA wsaData&#123;&#125;;
+    SOCKET fd&#123;&#125;;
+
+    // construction the finally block
+    auto finallyBlock = [&amp;](uint8_t *data)
+    &#123;
+        if (nullptr != data)
+            delete data;
+
+        if (0 != fd &amp;&amp; INVALID_SOCKET != fd)
+            ::closesocket(fd);
+
+        ::WSACleanup();
+
+        std::cout &lt;&lt; &quot;[=] finally block&quot; &lt;&lt; std::endl;
+    &#125;;
+
+    std::unique_ptr&lt;uint8_t, decltype(finallyBlock)&gt; defer(new uint8_t, finallyBlock);
+
+    // initialization
+    auto errorCode = ::WSAStartup(MAKEWORD(2, 2), &amp;wsaData);
+    if (errorCode)
+        throw std::runtime_error(lastErrorMessage(errorCode));
+
+    // create socket fd
+    fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    if (INVALID_SOCKET == fd)
+        throw std::runtime_error(lastErrorMessage(errorCode));
+
+    // configure server
+    SOCKADDR_IN serverConfig&#123;&#125;;
+    serverConfig.sin_family = PF_INET;
+    serverConfig.sin_addr.S_un.S_addr = inet_addr(&quot;127.0.0.1&quot;);
+    serverConfig.sin_port = htons(11451);
+
+    // connecting to the server
+    if (connect(fd, reinterpret_cast&lt;SOCKADDR *&gt;(&amp;serverConfig), sizeof(SOCKADDR)))
+    &#123;
+        std::cout &lt;&lt; &quot;[-] connection failed&quot; &lt;&lt; std::endl;
+        throw std::runtime_error(lastErrorMessage());
+    &#125;
+&#125;
+</code></pre>
+<p>我们对<code>test01</code>函数进行一些修改，添加<code>finally</code>实现与一些信息输出。</p>
+<p>代码执行后效果如下</p>
+<p><img src="/images/1650222143.jpg" alt="代码执行结果"></p>
+<p>可以看到代码的执行顺序与我们预期的一样，顺序为</p>
+<ol>
+<li>输出”connection failed”信息。</li>
+<li><code>throw</code>连接服务器的异常信息。</li>
+<li>局部变量超出函数作用域<code>RAII</code>开始执行，智能指针<code>defer</code>开始销毁所管理的裸指针<code>uint8_t*</code>。</li>
+<li>因为我们设置了自定义销毁函数(<code>deleter</code>)，所以会进入<code>finallyBlock</code>这个<code>lambda</code>中。</li>
+<li>执行释放资源的操作并输出信息”finally block”。</li>
+<li>回到外部调用函数的地方(<code>main</code>)并处理异常，输出异常信息。</li>
+</ol>
+<p>这样我们就实现了一个简易的<code>finally</code>。</p>
+<h2 id="完整改进实现"><a href="#完整改进实现" class="headerlink" title="完整改进实现"></a>完整改进实现</h2><p>上面说到的实现中虽然能用，但基本是不符合我们所设想的情况的。</p>
+<p>首先他不是一个”新语法”，而是一种写法。</p>
+<p>其次它的运行每次需要在堆中申请一个字节大小的内存并最终释放，如果编译器不能很好的优化的话这将造成很大的性能瓶颈。</p>
+<p><code>new</code>与<code>delete</code>的代价可不便宜啊，对于我们想单单执行一个<code>lambda</code>表达式来说有点过于浪费了。</p>
+<p>那么既然大家都是基于<code>RAII</code>的话，何不自己造呢，老规矩先上代码后分析</p>
+<pre><code>#ifndef FINALLY_H //! FINALLY_H
+#define FINALLY_H
+
+#include &lt;type_traits&gt;
+#include &lt;utility&gt;
+
+template &lt;typename callable_t&gt;
+class __FinallyCaller
+&#123;
+public:
+    __FinallyCaller(callable_t callable)
+        : m_callable(std::move(callable))
+    &#123;
+    &#125;
+
+    ~__FinallyCaller() noexcept
+    &#123;
+        m_callable();
+    &#125;
+
+private:
+    callable_t m_callable;
+&#125;;
+
+struct __Helper
+&#123;
+    template &lt;typename callable_t&gt;
+    constexpr __FinallyCaller&lt;callable_t&gt; operator+(const callable_t &amp;&amp;callable)
+    &#123;
+        static_assert(noexcept(callable), &quot;The finally block cannot throw&quot;);
+
+        return &#123;callable&#125;;
+    &#125;
+&#125;;
+
+#define _MAKELAMBDA(x, y) x##y
+#define MAKELAMBDA(x, y) _MAKELAMBDA(x, y)
+#define finally auto &amp;&amp;MAKELAMBDA(lambda, __COUNTER__) = __Helper&#123;&#125; + [&amp;]() noexcept
+
+#endif //! FINALLY_H
+</code></pre>
+<p>首先我们来看<code>__FinallyCaller</code>这个模板类，它的构造函数接收一个<code>callable</code>的参数并存入成员变量中，并在析构函数中去调用这个<code>callable</code>。</p>
+<p>即当局部变量类型为<code>__FinallyCaller</code>而又开始执行<code>RAII</code>时，传进来的<code>callable</code>会被调用，可以是函数也可以是<code>lambda</code>。</p>
+<p>那么我们来看一下<code>__FinallyCaller</code>的使用方法</p>
+<pre><code>int main()
+&#123;
+    __FinallyCaller defer = [&amp;]
+    &#123;
+        std::cout &lt;&lt; &quot;[=] finally block&quot; &lt;&lt; std::endl;
+    &#125;;
+
+    std::cout &lt;&lt; &quot;[=] main end&quot; &lt;&lt; std::endl;
+
+    return 0;
+&#125;
+</code></pre>
+<hr>
+<pre><code>/out:test_finally.exe
+test_finally.obj
+[=] main end
+[=] finally block
+</code></pre>
+<p>可以看到流程与我们预想的一样。</p>
+<p>但这种写法有一个问题，就是只支持<code>c++17</code>及以上的版本，因为在<code>c++17</code>才加入了<a target="_blank" rel="noopener" href="https://en.cppreference.com/w/cpp/language/class_template_argument_deduction" title="详细资料">类模板参数推导</a>，而<code>__Helper</code>就是解决这个问题的方法之一。</p>
+<p>来看一下用法</p>
+<pre><code>int main()
+&#123;
+    auto defer = __Helper&#123;&#125; + [&amp;]
+    &#123;
+        std::cout &lt;&lt; &quot;[=] finally block&quot; &lt;&lt; std::endl;
+    &#125;;
+
+    std::cout &lt;&lt; &quot;[=] main end&quot; &lt;&lt; std::endl;
+
+    return 0;
+&#125;
+</code></pre>
+<hr>
+<pre><code>/out:test_finally.exe
+test_finally.obj
+[=] main end
+[=] finally block
+</code></pre>
+<p>没有问题，在<code>c++11</code> <code>c++14</code>中都能正常编译运行。</p>
+<p>在这些用例中我们都还需要自己声明变量与构造，达不到我们<code>finally</code>的需求，那么再来看看剩余的3个宏定义的工作。</p>
+<p>首先是<code>#define _MAKELAMBDA(x, y) x##y</code>，这个没啥好说的就是一个宏连接，将传入的<code>x</code>和<code>y</code>进行字面上的连接，比如<code>1</code>和<code>2</code>就会变成<code>12</code>。</p>
+<p>然后是<code>#define MAKELAMBDA(x, y) _MAKELAMBDA(x, y)</code>，辅助展开，这个具体有啥用下面说明。</p>
+<p>最后是<code>#define finally auto &amp;&amp;MAKELAMBDA(lambda, __COUNTER__) = __Helper&#123;&#125; + [&amp;]() noexcept</code>。</p>
+<p>这条宏的本质是声明一个变量，来简化展开看一下就是<code>auto lambda0 = __Helper&#123;&#125; + [&amp;]</code>，其中这个变量名<code>lambda0</code>后面跟的<code>0</code>是由宏<code>__COUNTER__</code>提供的一个全局计数器，使用<code>MAKELAMBDA</code>进行连接而成。</p>
+<p>这就要说到第二个宏辅助展开的作用，这里的<code>__COUNTER__</code>如果不进行两层的<code>MAKELAMBDA</code>包装的话是无法成功展开的，就会变成<code>lambda__COUNTER__</code>这样的情况，这就与我们的预期相违，所以需要加一层。</p>
+<p>那么有了这3条宏的加持我们基本上可以写出符合我们预期的代码了，我们直接对<code>test01</code>函数进行修改来看一下最终效果</p>
+<pre><code>void test01()
+&#123;
+    WSADATA wsaData&#123;&#125;;
+    SOCKET fd&#123;&#125;;
+
+    // construction the finally block
+    finally
+    &#123;
+        if (0 != fd &amp;&amp; INVALID_SOCKET != fd)
+            ::closesocket(fd);
+
+        ::WSACleanup();
+
+        std::cout &lt;&lt; &quot;[=] finally block&quot; &lt;&lt; std::endl;
+    &#125;;
+
+    // initialization
+    auto errorCode = ::WSAStartup(MAKEWORD(2, 2), &amp;wsaData);
+    if (errorCode)
+        throw std::runtime_error(lastErrorMessage(errorCode));
+
+    // create socket fd
+    fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    if (INVALID_SOCKET == fd)
+        throw std::runtime_error(lastErrorMessage(errorCode));
+
+    // configure server
+    SOCKADDR_IN serverConfig&#123;&#125;;
+    serverConfig.sin_family = PF_INET;
+    serverConfig.sin_addr.S_un.S_addr = inet_addr(&quot;127.0.0.1&quot;);
+    serverConfig.sin_port = htons(11451);
+
+    // connecting to the server
+    if (connect(fd, reinterpret_cast&lt;SOCKADDR *&gt;(&amp;serverConfig), sizeof(SOCKADDR)))
+    &#123;
+        std::cout &lt;&lt; &quot;[-] connection failed&quot; &lt;&lt; std::endl;
+        throw std::runtime_error(lastErrorMessage());
+    &#125;
+&#125;
+</code></pre>
+<hr>
+<pre><code>/out:test_finally.exe
+test_finally.obj
+[=] start test
+[-] connection failed
+[=] finally block
+[-] 由于目标计算机积极拒绝，无法连接。 
+</code></pre>
+<p>可以看到<code>finally</code>的书写一下就变得简单了，没有那么多繁杂的东西，只有一个<code>finally</code>关键字与<code>&#123;&#125;;</code>，大括号中即是我们需要最终执行的代码。</p>
+<p>这个方法相比简易方法实现的最大的好处就是跟堆内存没有关系，这意味着在编译器的优化下可以被完全展开，这对于吃性能的场景是非常友好的。</p>
+<p>唯一的缺点就是最后还要跟个<code>;</code>，毕竟这是一条语句。如果能去掉这个<code>;</code>的话就更好了。</p>
+<h2 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h2><p>那么其实就这样了，也没有什么特别的难点，就是好用！</p>
+<p>那就这样了，有缘再见~</p>
+</article><section class="jump-container is-flex is-justify-content-space-between my-6"><!-- em is empty placeholder--><a class="button is-default" href="/2022/12/17/%E7%BC%96%E7%A8%8B-%E4%BD%BF%E7%94%A8C++20%E5%AE%9E%E7%8E%B0%E5%BC%82%E6%AD%A5%E4%BB%BB%E5%8A%A1%E4%B8%8E%E5%8D%95-%E5%A4%9A%E7%BA%BF%E7%A8%8B%E7%9A%84%E5%8D%8F%E7%A8%8B%E8%B0%83%E5%BA%A6%E5%99%A8/" title="[编程] 使用C++20实现异步任务与单/多线程的协程调度器"><i class="iconfont icon-prev mr-2 has-text-grey"></i><span class="has-text-weight-semibold">上一页: [编程] 使用C++20实现异步任务与单/多线程的协程调度器</span></a><a class="button is-default" href="/2022/09/15/%E9%80%86%E5%90%91-%E7%B1%B3%E6%B8%B8%E7%A4%BE%E5%8E%9F%E7%A5%9E%E6%AF%8F%E6%97%A5%E7%AD%BE%E5%88%B0%E4%B9%8BDS%E7%AE%97%E6%B3%95/" title="[逆向] 米游社原神每日签到之DS算法"><span class="has-text-weight-semibold">下一页: [逆向] 米游社原神每日签到之DS算法</span><i class="iconfont icon-next ml-2 has-text-grey"></i></a></section><article class="mt-6 comment-container"><script async repo="Bzi-Han/bzi-han.github.io" src="https://utteranc.es/client.js" issue-term="pathname" theme="preferred-color-scheme"></script></article></div></div></main></main><footer class="is-flex is-flex-direction-column is-align-items-center is-flex-shrink-0 is-family-serif"><section class="sns-container"><!-- Github--><a title="github" target="_blank" rel="noopener nofollow" href="//github.com/Bzi-Han"><i class="iconfont icon-github"></i></a><!-- Ins--><!-- RSS--><!-- 知乎--><!-- 领英--><!-- 脸书--></section><p><span>Copyright ©</span><span> Bzi-Han 2023</span></p><div class="is-flex is-justify-content-center is-flex-wrap-wrap"><p>Powered by Hexo &verbar;&nbsp;</p><p class="is-flex is-justify-content-center"><a title="Hexo theme author" target="_blank" rel="noopener" href="//github.com/haojen">Theme by Haojen&nbsp;</a></p><div style="margin-top: 2px"><a class="github-button" title="github-button" target="_blank" rel="noopener" href="https://github.com/haojen/hexo-theme-Claudia" data-color-scheme="no-preference: light; light: light; dark: dark;" data-show-count="true"></a></div></div><div><span></span></div></footer><script async defer src="https://buttons.github.io/buttons.js"></script><script src="/js/post.js"></script></body></html>
