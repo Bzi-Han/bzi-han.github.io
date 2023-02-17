@@ -57,5 +57,25 @@ window.$claudia = {
         })
 
         callback && callback(media.matches ? 'dark' : 'light')
+    },
+    initialize() {
+        document.querySelector('.darker-than-black').onended = function (){
+            if (!this.index)
+                this.index = 0
+
+            this.src = ['about00.webm', 'about01.webm', 'about02.webm'][++this.index % 3]
+            this.play()
+        }
+    },
+    autoplay() {
+        document.querySelector('.dialog > .window > .footer > .ok').addEventListener('click', () => {
+            if (!this.playstate) {
+                try {
+                    document.querySelector('.dialog').style.display = 'none';
+                    document.querySelector('.darker-than-black').play()
+                    this.playstate = true
+                } catch (error) {}
+            }
+        })
     }
 }
