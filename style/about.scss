@@ -1,12 +1,20 @@
+@import "common/variable";
+
 .about-page {
-  height: 100%; }
-  .about-page aside img {
+  height: 100%;
+  // about page user info cover
+  aside img {
     width: 100%;
     height: 100%;
     padding: 5px;
-    object-fit: cover; }
-  .about-page .about-title {
-    font-weight: normal; }
+
+    object-fit: cover;
+  }
+
+  .about-title {
+    font-weight: normal;
+  }
+}
 
 .darker-than-black {
   min-height: 100%;
@@ -17,7 +25,8 @@
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  z-index: -1; }
+  z-index: -1;
+}
 
 .dialog {
   width: 100%;
@@ -29,34 +38,47 @@
   flex-wrap: nowrap;
   position: absolute;
   left: 0;
-  top: 0; }
-  .dialog .window {
+  top: 0;
+
+  .window {
     width: 30%;
     height: 180px;
     background-color: #141414;
     border-radius: 2px;
-    box-shadow: 0px 12px 32px 4px rgba(0, 0, 0, 0.36), 0px 8px 20px rgba(0, 0, 0, 0.72);
+    box-shadow: 0px 12px 32px 4px rgba(0, 0, 0, .36), 0px 8px 20px rgba(0, 0, 0, .72);
     color: #CFD3DC;
     padding: 20px;
     display: flex;
     flex-direction: column;
-    justify-content: space-between; }
-    .dialog .window .header .title {
-      display: block;
-      color: #CFD3DC;
-      font-size: 16px;
-      font-weight: 600px;
-      line-height: normal; }
-    .dialog .window .content {
-      padding-top: 10px; }
-      .dialog .window .content .tips {
-        display: block; }
-    .dialog .window .footer {
+    justify-content: space-between;
+
+    .header {
+      .title {
+        display: block;
+        color: #CFD3DC;
+        font-size: 16px;
+        font-weight: 600px;
+        line-height: normal;
+      }
+
+    }
+
+    .content {
+      padding-top: 10px;
+
+      .tips {
+        display: block;
+      }
+
+    }
+
+    .footer {
       background-color: transparent;
       padding: 0;
       display: flex;
-      justify-content: flex-end; }
-      .dialog .window .footer .ok {
+      justify-content: flex-end;
+
+      .ok {
         display: inline-flex;
         justify-content: center;
         align-items: center;
@@ -76,14 +98,23 @@
         border-color: #4C4D4F;
         padding: 8px 15px;
         font-size: 14px;
-        border-radius: 4px; }
-      .dialog .window .footer .ok:hover {
+        border-radius: 4px;
+      }
+      .ok:hover {
         color: #409EFF;
         border-color: #213D5B;
         background-color: #18222C;
-        outline: none; }
-      .dialog .window .footer .ok:active {
+        outline: none;
+      }
+      .ok:active {
         color: #409EFF;
         border-color: #409EFF;
         background-color: #18222C;
-        outline: none; }
+        outline: none;
+      }
+
+    }
+
+  }
+
+}

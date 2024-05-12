@@ -1,0 +1,158 @@
+<!DOCTYPE html><html class="appearance-auto" lang="zh-CN"><head><meta charset="UTF-8"><title>[编程] Android libsu 改造对NativeBridge进行支持</title><meta name="description" content="Bzi-Han's blog, Bzi-Han的博客"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, initial-scale=1"><!-- Google Analytics --><script>(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q || []).push(arguments)},i[r].l=1 * new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'G-PDQ9KC0268', 'www.googletagmanager.com');
+ga('send', 'pageview');</script><!-- End Google Analytics -->
+<!-- Baidu Analytics --><script>var _hmt = _hmt || [];
+(function() {
+var hm = document.createElement("script");
+hm.src = "//hm.baidu.com/hm.js?" + 'acc600f52de48f3cdbea41a9971e8278';
+var s = document.getElementsByTagName("script")[0];
+s.parentNode.insertBefore(hm, s);
+})();</script><!-- End Baidu Analytics --><link rel="icon" href="/images/favicon.png"><link rel="stylesheet" href="/style/common/bulma.css"><link rel="stylesheet" href="/style/base.css"><link rel="stylesheet" href="/style/common/helper.css"><script src="/js/common.js"></script><link rel="stylesheet" href="/style/post.css"><link rel="stylesheet" href="/style/themes/highlight-theme-light.css"><script src="/js/highlight.pack.js"></script><meta name="description" content="前言本文仅供学习探讨之用，如果侵犯了您的权益请联系我删除。
+需求背景前段时间搞一个东西用到了libsu，不得不说用起来还是挺舒服的，直接代码全在一个Project里，然后只需要关心业务，不用管底层的实现，很方便。
+后来在模拟器上跑发现跑不起来，情景就是APK没有提供x86_64的so的情况下在root进程(RootService)中去加载arm64-v8a的so，然后因为不同架构所以会加载失败，这个时候去调用so的接口就会寄掉，因为没有实现嘛。
+当然能提供x86_64的so最好，但是有些情况提供不了，比如我的情况就是用了Paddle Lite库，然后按照官方原话这个库仅支持arm64-v8a，说是搞了很多优化，所以没得办法。
+
+于是就产生了魔改libsu的想法。
+项目地址和使用方法libsu-nativeb.."><meta name="generator" content="Hexo 6.1.0"><link rel="alternate" href="/atom.xml" title="Bzi-Han的博客" type="application/atom+xml">
+</head><body class="is-flex is-flex-direction-column"><header class="header-widget is-flex-shrink-0 is-hidden-mobile"><div class="container is-fullhd is-flex is-justify-content-space-between is-align-items-center is-full-height"><section class="is-hidden-mobile is-flex-shrink-0"><h2><a href="/">Bzi-Han's blog</a></h2></section><h3 class="is-hidden-mobile is-family-serif is-full-height is-flex is-align-items-center is-flex-shrink-0"><div class="is-full-height" id="postTopic"><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">[编程] Android libsu 改造对NativeBridge进行支持</p><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">点击返回顶部</p></div></h3><aside class="is-flex-shrink-0"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></aside></div></header><header class="is-flex header-widget is-flex-shrink-0 is-align-items-center is-justify-content-center is-hidden-tablet"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></header><main><main class="container is-max-widescreen content section post-page pt-4 px-4"><div class="columns is-flex-desktop is-justify-content-center is-flex-direction-row-reverse"><div class="column is-3 is-hidden-mobile"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9C%80%E6%B1%82%E8%83%8C%E6%99%AF"><span class="toc-text">需求背景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%A1%B9%E7%9B%AE%E5%9C%B0%E5%9D%80%E5%92%8C%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95"><span class="toc-text">项目地址和使用方法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%94%B9%E9%80%A0libsu"><span class="toc-text">改造libsu</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BB%93%E8%AF%AD"><span class="toc-text">结语</span></a></li></ol></div><div class="column is-9"><header class="my-4"></header><h1 class="mt-0 mb-1 is-family-serif" id="postTitle">[编程] Android libsu 改造对NativeBridge进行支持</h1><time class="has-text-grey" datetime="2024-04-20T04:56:08.000Z">2024-04-20</time><article class="mt-2 post-content"><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>本文仅供学习探讨之用，如果侵犯了您的权益请联系我删除。</p>
+<h2 id="需求背景"><a href="#需求背景" class="headerlink" title="需求背景"></a>需求背景</h2><p>前段时间搞一个东西用到了<code>libsu</code>，不得不说用起来还是挺舒服的，直接代码全在一个Project里，然后只需要关心业务，不用管底层的实现，很方便。</p>
+<p>后来在模拟器上跑发现跑不起来，情景就是APK没有提供<code>x86_64</code>的so的情况下在root进程(RootService)中去加载<code>arm64-v8a</code>的so，然后因为不同架构所以会加载失败，这个时候去调用so的接口就会寄掉，因为没有实现嘛。</p>
+<p>当然能提供<code>x86_64</code>的so最好，但是有些情况提供不了，比如我的情况就是用了<a target="_blank" rel="noopener" href="https://github.com/PaddlePaddle/Paddle-Lite">Paddle Lite</a>库，然后按照官方原话这个库仅支持<code>arm64-v8a</code>，说是搞了很多优化，所以没得办法。</p>
+<p><img src="/images/sticker_qiqidao.png" alt="一脸黑线.jpg"></p>
+<p>于是就产生了魔改<code>libsu</code>的想法。</p>
+<h2 id="项目地址和使用方法"><a href="#项目地址和使用方法" class="headerlink" title="项目地址和使用方法"></a>项目地址和使用方法</h2><p><em>libsu-nativebridge</em> <code>fork from libsu</code> <a target="_blank" rel="noopener" href="https://github.com/Bzi-Han/libsu-nativebridge">https://github.com/Bzi-Han/libsu-nativebridge</a></p>
+<p>使用方法和原来的是一样的，只不过需要改一下包的路径</p>
+<pre><code class="kotlin">android &#123;
+    compileOptions &#123;
+        // The library uses Java 8 features
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    &#125;
+&#125;
+repositories &#123;
+    maven &#123; url &#39;https://jitpack.io&#39; &#125;
+&#125;
+dependencies &#123;
+    def libsuVersion = &#39;5.2.2&#39;
+
+    // The core module that provides APIs to a shell
+    implementation &quot;com.github.Bzi-Han.libsu-nativebridge:core:$&#123;libsuVersion&#125;&quot;
+
+    // Optional: APIs for creating root services. Depends on &quot;:core&quot;
+    implementation &quot;com.github.Bzi-Han.libsu-nativebridge:service:$&#123;libsuVersion&#125;&quot;
+
+    // Optional: Provides remote file system support
+    implementation &quot;com.github.Bzi-Han.libsu-nativebridge:nio:$&#123;libsuVersion&#125;&quot;
+&#125;
+</code></pre>
+<p>其实我本来想发个PR，不过想到添加了额外的C++项目(劫持的so库)，以及关键参数的生命不确定性(<code>-Xforce-nb-testing</code>)和我只做了<code>x86_64</code>的支持，所以暂时就先这样吧。</p>
+<h2 id="改造libsu"><a href="#改造libsu" class="headerlink" title="改造libsu"></a>改造libsu</h2><p>原理的话可以看上篇文章<a target="_blank" rel="noopener" href="https://bzi-han.github.io/2024/04/20/%E7%BC%96%E7%A8%8B-Android-app-process-%E5%90%AF%E5%8A%A8%E8%BF%9B%E7%A8%8B%E5%BC%BA%E8%A1%8C%E5%BC%80%E5%90%AFNativeBridge%E6%94%AF%E6%8C%81/">[编程] Android app_process 启动进程强行开启NativeBridge支持</a>。</p>
+<p>总之我们先添加一个用于劫持nativebridge的so添加到项目中</p>
+<pre><code class="kotlin">defaultConfig &#123;
+    ndk &#123;
+        abiFilters += listOf(&quot;x86_64&quot;)
+    &#125;
+&#125;
+
+externalNativeBuild &#123;
+    cmake &#123;
+        path = file(&quot;src/main/cpp/CMakeLists.txt&quot;)
+    &#125;
+&#125;
+</code></pre>
+<p>劫持的代码逻辑如下</p>
+<pre><code class="c++">bool android::native_bridge::v1::Initialize(const android::NativeBridgeRuntimeCallbacks *androidRuntimeCallbacks, const char *appCodeCacheDir, const char *isa)
+&#123;
+    auto callbacks = detail::GetCallbacksInternal();
+
+    if (nullptr == callbacks)
+        return false;
+
+    auto result = callbacks-&gt;initialize(androidRuntimeCallbacks, appCodeCacheDir, isa);
+    if (!result)
+    &#123;
+        isa = &quot;arm64&quot;;
+
+        LogError(&quot;[-] [Initialize] Tried default params failed, also hijack to %p %s %s&quot;, androidRuntimeCallbacks, appCodeCacheDir, isa);
+        result = callbacks-&gt;initialize(androidRuntimeCallbacks, appCodeCacheDir, isa);
+        if (!result)
+            LogError(&quot;[-] [Initialize] Tried hijack params failed, unknow error&quot;);
+        else
+            LogInfo(&quot;[+] [Initialize] Tried hijack params succeeded&quot;);
+    &#125;
+
+    return result;
+&#125;
+</code></pre>
+<p>我们的逻辑是先尝试用传入的参数去初始化，如果失败了，那么就尝试用<code>arm64</code>去初始化，如果还是失败了，那就无了。</p>
+<p>一般来说就是<code>arm64</code>，因为我们的目的就是在<code>x86_64</code>的平台上转译<code>arm64-v8a</code>的so嘛。</p>
+<p>然后就是Java层的修改。</p>
+<p>我们添加一个函数用来判断当前是否支持NativeBridge</p>
+<pre><code class="java">@SuppressLint(&quot;PrivateApi&quot;)
+private boolean isSupportNativeBridge() &#123;
+    if (Build.VERSION.SDK_INT &lt; Build.VERSION_CODES.M)
+        return false;
+    // We only supported the x86_64 platform.
+    if (!&quot;x86_64&quot;.equals(Build.SUPPORTED_ABIS[0]))
+        return false;
+
+    try &#123;
+        Class&lt;?&gt; SystemProperties = Class.forName(&quot;android.os.SystemProperties&quot;);
+        Method get = SystemProperties.getMethod(&quot;get&quot;, String.class);
+        String nativeBridgeProvider = (String)get.invoke(SystemProperties, &quot;ro.dalvik.vm.native.bridge&quot;);
+
+        return !&quot;&quot;.equals(nativeBridgeProvider) &amp;&amp; !&quot;0&quot;.equals(nativeBridgeProvider);
+    &#125; catch (Exception e) &#123;
+        Utils.log(TAG, e.getMessage());
+        return false;
+    &#125;
+&#125;
+</code></pre>
+<p>然后在<code>startRootProcess</code>函数返回的<code>Task</code>中修改启动逻辑和参数。</p>
+<p>先初始化必要的变量</p>
+<pre><code class="java">String setup = &quot;&quot;; // 用于设置启动root进程时的环境
+boolean isNativeBridgeSupported = isSupportNativeBridge(); // 用于判断是否支持NativeBridge的变量
+File nativeBridge = new File(ctx.getCacheDir(), &quot;libnativebridgehijack.so&quot;); // 释放assets里的so到本地的路径
+</code></pre>
+<p>然后释放assets里的so到本地</p>
+<pre><code class="java">// Dump libnativebridgehijack.so as trampoline
+if (isNativeBridgeSupported) &#123;
+    try (InputStream in = ctx.getResources().getAssets().open(Build.SUPPORTED_ABIS[0] + &quot;/libnativebridgehijack.so&quot;);
+            OutputStream out = new FileOutputStream(nativeBridge)) &#123;
+        Utils.pump(in, out);
+    &#125;
+&#125;
+</code></pre>
+<p>其中<code>Build.SUPPORTED_ABIS[0]</code>代表的是当前平台的ABI。</p>
+<p>然后判断是否需要添加支持NativeBridge的启动参数</p>
+<pre><code class="java">if (isNativeBridgeSupported) &#123;
+    setup += String.format(
+            &quot;cd %s &amp;&amp; export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:. &amp;&amp;&quot;,
+            nativeBridge.getParent()
+    );
+
+    params += String.format(&quot; -Xforce-nb-testing -XX:NativeBridge=%s&quot;, nativeBridge.getName());
+&#125;
+</code></pre>
+<p>其中<code>setup</code>的作用需要重点说一下，因为<code>-XX:NativeBridge</code>参数只能给范围<code>[a-zA-Z0-9._-]</code>内的字符并且只能以<code>[a-zA-Z]</code>开头，所以我们没法直接指定类似<code>/data/local/tmp/xxx.so</code>这样的路径，详情可以看<br><a target="_blank" rel="noopener" href="https://cs.android.com/android/platform/superproject/main/+/main:art/libnativebridge/native_bridge.cc;l=179?hl=zh-cn">这里</a>。</p>
+<p>所以这里我们通过<code>cd</code>来指定当前目录，然后通过<code>export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:.</code>来指定<code>LD_LIBRARY_PATH</code>的值，这样就可以加载当前目录下的so了。</p>
+<p>指定当前目录还有一个很重要的作用是<code>code_cache</code>目录的创建，因为<code>-Xforce-nb-testing</code>参数的逻辑是固定死当前目录下创建<code>code_cache</code>的，详情可以看<a target="_blank" rel="noopener" href="https://cs.android.com/android/platform/superproject/main/+/main:art/runtime/runtime.cc;l=1113;drc=3d19fbcc09b1b44928639b06cd0b88f735cd988d?hl=zh-cn">这里</a>。</p>
+<p>最后就是修改启动参数了</p>
+<pre><code class="java">String cmd = String.format(Locale.ROOT,
+        &quot;%s (%s CLASSPATH=%s %s %s /system/bin %s &quot; +
+        &quot;com.topjohnwu.superuser.internal.RootServerMain &#39;%s&#39; %d %s &gt;/dev/null 2&gt;&amp;1)&amp;&quot;,
+        setup, env, mainJar, app_process, params, niceNameCmd,
+        name.flattenToString(),   // args[0]
+        Process.myUid(),          // args[1]
+        action);                  // args[2]
+</code></pre>
+<p>至此，我们就大功告成了！</p>
+<h2 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h2><p>I Got Smoke!</p>
+<iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=330 height=86 src="//music.163.com/outchain/player?type=2&id=1826990514&auto=1&height=66"></iframe>
+
+<p>那就这样了，有缘再见~</p>
+</article><section class="jump-container is-flex is-justify-content-space-between my-6"><!-- em is empty placeholder--><em></em><a class="button is-default" href="/2024/04/20/%E7%BC%96%E7%A8%8B-Android-app-process-%E5%90%AF%E5%8A%A8%E8%BF%9B%E7%A8%8B%E5%BC%BA%E8%A1%8C%E5%BC%80%E5%90%AFNativeBridge%E6%94%AF%E6%8C%81/" title="[编程] Android app_process 启动进程强行开启NativeBridge支持"><span class="has-text-weight-semibold">下一页: [编程] Android app_process 启动进程强行开启NativeBridge支持</span><i class="iconfont icon-next ml-2 has-text-grey"></i></a></section><article class="mt-6 comment-container"><script async repo="Bzi-Han/bzi-han.github.io" src="https://utteranc.es/client.js" issue-term="pathname" theme="preferred-color-scheme"></script></article></div></div></main></main><footer class="is-flex is-flex-direction-column is-align-items-center is-flex-shrink-0 is-family-serif"><section class="sns-container"><!-- Github--><a title="github" target="_blank" rel="noopener nofollow" href="//github.com/Bzi-Han"><i class="iconfont icon-github"></i></a><!-- Ins--><!-- RSS--><!-- 知乎--><!-- 领英--><!-- 脸书--></section><p><span>Copyright ©</span><span> Bzi-Han 2024</span></p><div class="is-flex is-justify-content-center is-flex-wrap-wrap"><p>Powered by Hexo &verbar;&nbsp;</p><p class="is-flex is-justify-content-center"><a title="Hexo theme author" target="_blank" rel="noopener" href="//github.com/haojen">Theme by Haojen&nbsp;</a></p><div style="margin-top: 2px"><a class="github-button" title="github-button" target="_blank" rel="noopener" href="https://github.com/haojen/hexo-theme-Claudia" data-color-scheme="no-preference: light; light: light; dark: dark;" data-show-count="true"></a></div></div><div><span></span></div></footer><script async defer src="https://buttons.github.io/buttons.js"></script><script src="/js/post.js"></script></body></html>

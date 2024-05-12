@@ -1,0 +1,154 @@
+<!DOCTYPE html><html class="appearance-auto" lang="zh-CN"><head><meta charset="UTF-8"><title>[编程] Android app_process 启动进程强行开启NativeBridge支持</title><meta name="description" content="Bzi-Han's blog, Bzi-Han的博客"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, initial-scale=1"><!-- Google Analytics --><script>(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q || []).push(arguments)},i[r].l=1 * new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'G-PDQ9KC0268', 'www.googletagmanager.com');
+ga('send', 'pageview');</script><!-- End Google Analytics -->
+<!-- Baidu Analytics --><script>var _hmt = _hmt || [];
+(function() {
+var hm = document.createElement("script");
+hm.src = "//hm.baidu.com/hm.js?" + 'acc600f52de48f3cdbea41a9971e8278';
+var s = document.getElementsByTagName("script")[0];
+s.parentNode.insertBefore(hm, s);
+})();</script><!-- End Baidu Analytics --><link rel="icon" href="/images/favicon.png"><link rel="stylesheet" href="/style/common/bulma.css"><link rel="stylesheet" href="/style/base.css"><link rel="stylesheet" href="/style/common/helper.css"><script src="/js/common.js"></script><link rel="stylesheet" href="/style/post.css"><link rel="stylesheet" href="/style/themes/highlight-theme-light.css"><script src="/js/highlight.pack.js"></script><meta name="description" content="前言本文仅供学习探讨之用，如果侵犯了您的权益请联系我删除。
+原理app_process部分启动流程
+
+这里我们重点关注ParsedOptions这个处理启动参数的函数，基本上能调整的参数都在这里。
+我们往下找，发现有两个与NativeBridge相关的参数，一个是-XX:NativeBridge，一个是-Xforce-nb-testing。
+.Define(&amp;quot;-XX:NativeBridge=_&amp;quot;)
+    .WithType&amp;lt;std::string&amp;gt;()
+    .IntoKey(M::NativeBridge)
+.Define(&amp;quot;-Xzygote-max-boot-retry=_&amp;quot;)
+    .WithType&amp;lt;unsigned int&amp;gt;(.."><meta name="generator" content="Hexo 6.1.0"><link rel="alternate" href="/atom.xml" title="Bzi-Han的博客" type="application/atom+xml">
+</head><body class="is-flex is-flex-direction-column"><header class="header-widget is-flex-shrink-0 is-hidden-mobile"><div class="container is-fullhd is-flex is-justify-content-space-between is-align-items-center is-full-height"><section class="is-hidden-mobile is-flex-shrink-0"><h2><a href="/">Bzi-Han's blog</a></h2></section><h3 class="is-hidden-mobile is-family-serif is-full-height is-flex is-align-items-center is-flex-shrink-0"><div class="is-full-height" id="postTopic"><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">[编程] Android app_process 启动进程强行开启NativeBridge支持</p><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">点击返回顶部</p></div></h3><aside class="is-flex-shrink-0"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></aside></div></header><header class="is-flex header-widget is-flex-shrink-0 is-align-items-center is-justify-content-center is-hidden-tablet"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></header><main><main class="container is-max-widescreen content section post-page pt-4 px-4"><div class="columns is-flex-desktop is-justify-content-center is-flex-direction-row-reverse"><div class="column is-3 is-hidden-mobile"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8E%9F%E7%90%86"><span class="toc-text">原理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%A3%E7%A0%81%E5%88%86%E6%9E%90"><span class="toc-text">代码分析</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BB%95%E8%BF%87%E7%BC%96%E8%AF%91%E6%97%B6%E5%B8%B8%E9%87%8FISA"><span class="toc-text">绕过编译时常量ISA</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BB%93%E8%AF%AD"><span class="toc-text">结语</span></a></li></ol></div><div class="column is-9"><header class="my-4"></header><h1 class="mt-0 mb-1 is-family-serif" id="postTitle">[编程] Android app_process 启动进程强行开启NativeBridge支持</h1><time class="has-text-grey" datetime="2024-04-20T04:54:25.000Z">2024-04-20</time><article class="mt-2 post-content"><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>本文仅供学习探讨之用，如果侵犯了您的权益请联系我删除。</p>
+<h2 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h2><p>app_process<strong>部分</strong>启动流程</p>
+<p><img src="/images/1650222155.jpg" alt="启动流程"></p>
+<p>这里我们重点关注<a target="_blank" rel="noopener" href="https://cs.android.com/android/platform/superproject/main/+/main:art/runtime/parsed_options.cc;drc=3d19fbcc09b1b44928639b06cd0b88f735cd988d;bpv=0;bpt=1;l=72?hl=zh-cn">ParsedOptions</a>这个处理启动参数的函数，基本上能调整的参数都在这里。</p>
+<p>我们往下找，发现有两个与NativeBridge相关的参数，一个是<code>-XX:NativeBridge</code>，一个是<code>-Xforce-nb-testing</code>。</p>
+<pre><code class="c++">.Define(&quot;-XX:NativeBridge=_&quot;)
+    .WithType&lt;std::string&gt;()
+    .IntoKey(M::NativeBridge)
+.Define(&quot;-Xzygote-max-boot-retry=_&quot;)
+    .WithType&lt;unsigned int&gt;()
+    .IntoKey(M::ZygoteMaxFailedBoots)
+.Define(&quot;-Xno-sig-chain&quot;)
+    .IntoKey(M::NoSigChain)
+.Define(&quot;--cpu-abilist=_&quot;)
+    .WithType&lt;std::string&gt;()
+    .IntoKey(M::CpuAbiList)
+.Define(&quot;-Xfingerprint:_&quot;)
+    .WithType&lt;std::string&gt;()
+    .IntoKey(M::Fingerprint)
+.Define(&quot;-Xexperimental:_&quot;)
+    .WithType&lt;ExperimentalFlags&gt;()
+    .AppendValues()
+    .IntoKey(M::Experimental)
+.Define(&quot;-Xforce-nb-testing&quot;)
+    .IntoKey(M::ForceNativeBridge)
+</code></pre>
+<p><code>-XX:NativeBridge</code>是指定NativeBridge Provider的路径，<code>-Xforce-nb-testing</code>是强行开启NativeBridge支持的关键参数，这个参数本来是Google用来<a target="_blank" rel="noopener" href="https://android.googlesource.com/platform//art/+/8e38dd55e9362fe3469d03268c8e7c231f68b316/test/115-native-bridge/run.py">测试</a>的，它可以让<code>-XX:NativeBridge</code>参数在非Zygote进程中启用。</p>
+<p>如果没有<code>-Xforce-nb-testing</code>这个参数，<code>-XX:NativeBridge</code>参数在非Zygote进程中会被加载一次，然后再卸载掉，然后就没有后续了。</p>
+<p>所以如果哪天Google要是移除了<code>-Xforce-nb-testing</code>这个参数那么这个方法就<strong>失效</strong>了。</p>
+<p>至于为何设置了<code>-XX:NativeBridge</code>参数就能支持NativeBridge，这个涉及到JavaVM加载动态库的逻辑，我贴几个相关的地方和函数的链接，感兴趣可以自己去分析一下，就不详细说了。</p>
+<ol>
+<li><a target="_blank" rel="noopener" href="https://cs.android.com/android/platform/superproject/main/+/main:art/runtime/jni/java_vm_ext.cc;l=931;drc=3d19fbcc09b1b44928639b06cd0b88f735cd988d?hl=zh-cn">JavaVMExt::LoadNativeLibrary</a></li>
+<li><a target="_blank" rel="noopener" href="https://cs.android.com/android/platform/superproject/main/+/main:art/runtime/jni/java_vm_ext.cc;l=1048;drc=3d19fbcc09b1b44928639b06cd0b88f735cd988d?hl=zh-cn">JavaVMExt::LoadNativeLibrary::needs_native_bridge</a></li>
+<li><a target="_blank" rel="noopener" href="https://cs.android.com/android/platform/superproject/main/+/main:art/libnativeloader/native_loader.cpp;l=275;drc=3d19fbcc09b1b44928639b06cd0b88f735cd988d;bpv=0;bpt=1?hl=zh-cn">OpenNativeLibrary</a></li>
+<li><a target="_blank" rel="noopener" href="https://cs.android.com/android/platform/superproject/main/+/main:art/libnativeloader/native_loader.cpp;l=359;drc=3d19fbcc09b1b44928639b06cd0b88f735cd988d;bpv=0;bpt=1?hl=zh-cn">OpenNativeLibrary::is_bridged</a></li>
+<li><a target="_blank" rel="noopener" href="https://cs.android.com/android/platform/superproject/main/+/main:art/libnativebridge/include/nativebridge/native_bridge.h;l=142;drc=3d19fbcc09b1b44928639b06cd0b88f735cd988d;bpv=0;bpt=1?hl=zh-cn">NativeBridgeIsPathSupported</a><ul>
+<li><a target="_blank" rel="noopener" href="https://cs.android.com/android/platform/superproject/main/+/main:art/libnativebridge/native_bridge.cc;l=643;drc=3d19fbcc09b1b44928639b06cd0b88f735cd988d;bpv=0;bpt=1?hl=zh-cn">Implement</a></li>
+</ul>
+</li>
+<li><a target="_blank" rel="noopener" href="https://cs.android.com/android/platform/superproject/main/+/main:art/runtime/jni/java_vm_ext.cc;l=164;drc=3d19fbcc09b1b44928639b06cd0b88f735cd988d?hl=zh-cn">SharedLibrary::FindSymbol</a></li>
+<li><a target="_blank" rel="noopener" href="https://cs.android.com/android/platform/superproject/main/+/main:art/runtime/jni/java_vm_ext.cc;l=159;drc=3d19fbcc09b1b44928639b06cd0b88f735cd988d?hl=zh-cn">SharedLibrary::NeedsNativeBridge</a></li>
+</ol>
+<h2 id="代码分析"><a href="#代码分析" class="headerlink" title="代码分析"></a>代码分析</h2><p>我们先来看<code>-XX:NativeBridge</code>参数的默认来源<a target="_blank" rel="noopener" href="https://cs.android.com/android/platform/superproject/main/+/main:frameworks/base/core/jni/AndroidRuntime.cpp;l=632;drc=3d19fbcc09b1b44928639b06cd0b88f735cd988d?hl=zh-cn">AndroidRuntime::startVm</a></p>
+<pre><code class="c++">// Native bridge library. &quot;0&quot; means that native bridge is disabled.
+//
+// Note: bridging is only enabled for the zygote. Other runs of
+//       app_process may not have the permissions to mount etc.
+property_get(&quot;ro.dalvik.vm.native.bridge&quot;, propBuf, &quot;&quot;);
+if (propBuf[0] == &#39;\0&#39;) &#123;
+    ALOGW(&quot;ro.dalvik.vm.native.bridge is not expected to be empty&quot;);
+&#125; else if (zygote &amp;&amp; strcmp(propBuf, &quot;0&quot;) != 0) &#123;
+    snprintf(nativeBridgeLibrary, sizeof(&quot;-XX:NativeBridge=&quot;) + PROPERTY_VALUE_MAX,
+                &quot;-XX:NativeBridge=%s&quot;, propBuf);
+    addOption(nativeBridgeLibrary);
+&#125;
+</code></pre>
+<p>可以看到ART默认就会读取系统属性<code>ro.dalvik.vm.native.bridge</code>来开启对NativeBridge的支持，但是仅限Zygote进程，非Zygote进程是没有这个参数的。</p>
+<p>而我们普通的APP都是从Zygote进程fork出来的，所以只要你的机器有设置<code>ro.dalvik.vm.native.bridge</code>属性，那么你的APP进程就可以支持NativeBridge。</p>
+<p>所以我们单独启动的进程就需要手动的加上相应的启动参数。</p>
+<p>我们在<a target="_blank" rel="noopener" href="https://cs.android.com/android/platform/superproject/main/+/main:art/runtime/runtime.cc;l=2152;drc=07094b1b11172ef1041a0c4a7ad6fd0193f0989f;bpv=0;bpt=1?hl=zh-cn">Runtime::Init</a>函数中可以看到有这么一段代码</p>
+<pre><code class="c++">&#123;
+    std::string native_bridge_file_name = runtime_options.ReleaseOrDefault(Opt::NativeBridge);
+    is_native_bridge_loaded_ = LoadNativeBridge(native_bridge_file_name);
+&#125;
+</code></pre>
+<p>这里会尝试加载<code>-XX:NativeBridge</code>参数指定的NativeBridge库，如果加载成功则<code>is_native_bridge_loaded_</code>为<code>true</code>，没指定参数或加载失败则<code>is_native_bridge_loaded_</code>为<code>false</code>。</p>
+<p>再来看<a target="_blank" rel="noopener" href="https://cs.android.com/android/platform/superproject/main/+/main:art/runtime/runtime.cc;l=1111;drc=3d19fbcc09b1b44928639b06cd0b88f735cd988d?hl=zh-cn">Runtime::Start</a>函数中有这么一段代码</p>
+<pre><code class="c++">if (!is_zygote_) &#123;
+    if (is_native_bridge_loaded_) &#123;
+        PreInitializeNativeBridge(&quot;.&quot;);
+    &#125;
+    NativeBridgeAction action = force_native_bridge_
+        ? NativeBridgeAction::kInitialize
+        : NativeBridgeAction::kUnload;
+    InitNonZygoteOrPostFork(self-&gt;GetJniEnv(),
+                            /* is_system_server= */ false,
+                            /* is_child_zygote= */ false,
+                            action,
+                            GetInstructionSetString(kRuntimeISA));
+&#125;
+</code></pre>
+<p>这里的<code>is_native_bridge_loaded_</code>就是前面尝试加载NativeBridge库的结果。</p>
+<p><code>force_native_bridge_</code>为<code>true</code>对应设置了<code>-Xforce-nb-testing</code>参数，没设置则为<code>fasle</code>。</p>
+<p>这里还有个很重要的参数<code>kRuntimeISA</code>，它表示了当前的运行时架构，比如<code>arm64</code>，<code>x86_64</code>等。</p>
+<p>非常蛋疼的是这个参数是一个编译时常量，没法修改，但是它又涉及到关键的加载逻辑，所以后面我们需要特殊方法来绕过它，相关代码在<a target="_blank" rel="noopener" href="https://cs.android.com/android/platform/superproject/main/+/main:art/libartbase/arch/instruction_set.h;l=50;drc=3d19fbcc09b1b44928639b06cd0b88f735cd988d?hl=zh-cn">instruction_set.h</a>中，这里我把代码贴出来</p>
+<pre><code class="c++">#if defined(__arm__)
+static constexpr InstructionSet kRuntimeISA = InstructionSet::kArm;
+#elif defined(__aarch64__)
+static constexpr InstructionSet kRuntimeISA = InstructionSet::kArm64;
+#elif defined (__riscv)
+static constexpr InstructionSet kRuntimeISA = InstructionSet::kRiscv64;
+#elif defined(__i386__)
+static constexpr InstructionSet kRuntimeISA = InstructionSet::kX86;
+#elif defined(__x86_64__)
+static constexpr InstructionSet kRuntimeISA = InstructionSet::kX86_64;
+#else
+static constexpr InstructionSet kRuntimeISA = InstructionSet::kNone;
+#endif
+</code></pre>
+<p><a target="_blank" rel="noopener" href="https://cs.android.com/android/platform/superproject/main/+/main:art/runtime/native_bridge_art_interface.cc;drc=3d19fbcc09b1b44928639b06cd0b88f735cd988d;l=101?hl=zh-cn">PreInitializeNativeBridge</a>为初始化一些信息的函数，作用是格式化<code>code_cache</code>的路径到<code>app_code_cache_dir</code>变量中和挂载一些信息到<code>cpuinfo</code>，参数是<code>code_cache</code>文件夹的路径，可能会用于保存转译后的东西(保不保存看系统或者参数)。</p>
+<p><a target="_blank" rel="noopener" href="https://cs.android.com/android/platform/superproject/main/+/main:art/runtime/runtime.cc;l=1118;drc=3d19fbcc09b1b44928639b06cd0b88f735cd988d?hl=zh-cn">InitNonZygoteOrPostFork</a>为初始化NativeBridge的函数，我们重点关注这段代码</p>
+<pre><code class="c++">if (is_native_bridge_loaded_) &#123;
+    switch (action) &#123;
+        case NativeBridgeAction::kUnload:
+            UnloadNativeBridge();
+            is_native_bridge_loaded_ = false;
+            break;
+        case NativeBridgeAction::kInitialize:
+            InitializeNativeBridge(env, isa);
+            break;
+    &#125;
+&#125;
+</code></pre>
+<p>其中<code>action</code>对应前面的<code>force_native_bridge_</code>判断的结果，如果我们没有设置<code>-Xforce-nb-testing</code>参数的话这里会是<code>kUnload</code>，直接将加载的NativeBridge卸载掉，反之就开始初始化。</p>
+<h2 id="绕过编译时常量ISA"><a href="#绕过编译时常量ISA" class="headerlink" title="绕过编译时常量ISA"></a>绕过编译时常量ISA</h2><p>前面说过<code>kRuntimeISA</code>是一个编译时常量，它涉及到初始化NativeBridge的目标转译架构，虽然我们没法修改它(不考虑做动态Patch的情况下)，但是NativeBridge Provider是按我们指定的so路径来加载的，所以我们可以用劫持so的思路来改掉isa参数。</p>
+<p>对应的是<a target="_blank" rel="noopener" href="https://cs.android.com/android/platform/superproject/main/+/main:art/libnativebridge/include/nativebridge/native_bridge.h;l=210;drc=977d51ab598fc8e24cedf3ba9b1fea3ed4a6b6b8;bpv=0;bpt=1?hl=zh-cn">NativeBridgeCallbacks::initialize</a>函数，我们在劫持的so中将传入的<code>instruction_set</code>参数改成我们需要转译的目标平台再调用原函数即可，例如在模拟器(x86)中转译<code>arm64</code>的so就是</p>
+<pre><code class="c++">bool android::native_bridge::v1::Initialize(const android::NativeBridgeRuntimeCallbacks *androidRuntimeCallbacks, const char *appCodeCacheDir, const char *isa)
+&#123;
+    auto callbacks = detail::GetCallbacksInternal();
+
+    isa = &quot;arm64&quot;;
+
+    return callbacks-&gt;initialize(androidRuntimeCallbacks, appCodeCacheDir, isa);
+&#125;
+</code></pre>
+<p>然后<code>-XX:NativeBridge</code>参数改为劫持的so路径就可以实现了。</p>
+<h2 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h2><p>在线搜索找代码还是有点蛋疼的，好在引用功能做的好。</p>
+<iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=330 height=86 src="//music.163.com/outchain/player?type=2&id=515788042&auto=1&height=66"></iframe>
+
+<p>那就这样了，有缘再见~</p>
+</article><section class="jump-container is-flex is-justify-content-space-between my-6"><!-- em is empty placeholder--><a class="button is-default" href="/2024/04/20/%E7%BC%96%E7%A8%8B-Android-libsu-%E6%94%B9%E9%80%A0%E5%AF%B9NativeBridge%E8%BF%9B%E8%A1%8C%E6%94%AF%E6%8C%81/" title="[编程] Android libsu 改造对NativeBridge进行支持"><i class="iconfont icon-prev mr-2 has-text-grey"></i><span class="has-text-weight-semibold">上一页: [编程] Android libsu 改造对NativeBridge进行支持</span></a><a class="button is-default" href="/2024/03/31/%E7%BC%96%E7%A8%8B-%E6%90%AD%E5%BB%BA%E6%9C%AC%E5%9C%B0NPM%E4%BB%93%E5%BA%93%E4%B8%8E%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8/" title="[编程] 搭建本地NPM仓库与基本使用"><span class="has-text-weight-semibold">下一页: [编程] 搭建本地NPM仓库与基本使用</span><i class="iconfont icon-next ml-2 has-text-grey"></i></a></section><article class="mt-6 comment-container"><script async repo="Bzi-Han/bzi-han.github.io" src="https://utteranc.es/client.js" issue-term="pathname" theme="preferred-color-scheme"></script></article></div></div></main></main><footer class="is-flex is-flex-direction-column is-align-items-center is-flex-shrink-0 is-family-serif"><section class="sns-container"><!-- Github--><a title="github" target="_blank" rel="noopener nofollow" href="//github.com/Bzi-Han"><i class="iconfont icon-github"></i></a><!-- Ins--><!-- RSS--><!-- 知乎--><!-- 领英--><!-- 脸书--></section><p><span>Copyright ©</span><span> Bzi-Han 2024</span></p><div class="is-flex is-justify-content-center is-flex-wrap-wrap"><p>Powered by Hexo &verbar;&nbsp;</p><p class="is-flex is-justify-content-center"><a title="Hexo theme author" target="_blank" rel="noopener" href="//github.com/haojen">Theme by Haojen&nbsp;</a></p><div style="margin-top: 2px"><a class="github-button" title="github-button" target="_blank" rel="noopener" href="https://github.com/haojen/hexo-theme-Claudia" data-color-scheme="no-preference: light; light: light; dark: dark;" data-show-count="true"></a></div></div><div><span></span></div></footer><script async defer src="https://buttons.github.io/buttons.js"></script><script src="/js/post.js"></script></body></html>
