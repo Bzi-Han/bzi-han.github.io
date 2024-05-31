@@ -23,6 +23,11 @@
   <priority>0.80</priority>
 </url>
 <url>
+  <loc>https://bzi-han.github.io/2024/05/31/%E7%BC%96%E7%A8%8B-Visual-Studio-Code-VSCode-%E4%B8%AD%E9%85%8D%E7%BD%AEC-C-%E8%B0%83%E8%AF%95%E5%92%8CClang-Format/</loc>
+  <lastmod>2024-05-31T23:02:25+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
   <loc>https://bzi-han.github.io/2024/05/31/%E7%BC%96%E7%A8%8B-Visual-Studio-Code-VSCode-%E5%9C%A8Windows%E4%B8%AD%E9%85%8D%E7%BD%AECMake-clangd/</loc>
   <lastmod>2024-05-31T19:47:10+00:00</lastmod>
   <priority>0.80</priority>
@@ -85,6 +90,11 @@
 <url>
   <loc>https://bzi-han.github.io/page/2/</loc>
   <lastmod>2024-05-15T01:39:25+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://bzi-han.github.io/archives/2024/05/</loc>
+  <lastmod>2024-05-31T16:29:05+00:00</lastmod>
   <priority>0.80</priority>
 </url>
 <url>
