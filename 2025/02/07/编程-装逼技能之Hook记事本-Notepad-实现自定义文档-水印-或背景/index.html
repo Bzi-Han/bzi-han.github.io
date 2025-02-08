@@ -359,7 +359,7 @@ int WINAPI FillRectHook(HDC hdc, CONST RECT *lprc, HBRUSH hbr)
 <p>如果给<code>--daemon</code>或<code>-d</code>参数则启动一个后台进程，然后轮询查找<code>notepad.exe</code>进程自动注入，每个进程仅注入一次。</p>
 <p><img src="/images/1650222210.gif" alt="自动注入效果"></p>
 <h2 id="完整代码"><a href="#完整代码" class="headerlink" title="完整代码"></a>完整代码</h2><p>完整代码已经上传到Github，有兴趣的可以自己查看。</p>
-<p><a href="xxx">xxx</a></p>
+<p>仓库：<a target="_blank" rel="noopener" href="https://github.com/Bzi-Han/MineNotepad">MineNotepad</a>。</p>
 <h2 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h2><p><del>其实想一想如果把<code>ExtTextOutW</code>替换成<code>PolyTextOutW</code>好像可以强行把Edit控件变成富文本编辑框。</del></p>
 <p>获取需要渲染的文本然后通过染色规则计算出对应字符的颜色，再通过<code>PolyTextOutW</code>绘制出来（那我为什么不直接写个DX版的RichEdit呢.jpg）。</p>
 <p><img src="/images/sticker_smile.jpg" alt="sticker_smile.jpg"></p>
