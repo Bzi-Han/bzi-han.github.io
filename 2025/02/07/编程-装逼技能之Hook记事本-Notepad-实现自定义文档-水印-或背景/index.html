@@ -1,0 +1,369 @@
+<!DOCTYPE html><html class="appearance-auto" lang="zh-CN"><head><meta charset="UTF-8"><title>[编程] 装逼技能之Hook记事本(Notepad)实现自定义文档&quot;水印&quot;或背景</title><meta name="description" content="Bzi-Han's blog, Bzi-Han的博客"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, initial-scale=1"><meta name="baidu-site-verification" content="codeva-PoUpJL083P"><!-- Google Analytics --><script>(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q || []).push(arguments)},i[r].l=1 * new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'G-PDQ9KC0268', 'auto');
+ga('send', 'pageview');</script><!-- End Google Analytics -->
+<!-- Google tag (gtag.js) --><script async src="https://www.googletagmanager.com/gtag/js?id=G-PDQ9KC0268"></script><script>window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+
+gtag('config', 'G-PDQ9KC0268');</script><!-- End Google tag (gtag.js) -->
+<!-- Baidu Analytics --><script>var _hmt = _hmt || [];
+(function() {
+var hm = document.createElement("script");
+hm.src = "//hm.baidu.com/hm.js?" + 'acc600f52de48f3cdbea41a9971e8278';
+var s = document.getElementsByTagName("script")[0];
+s.parentNode.insertBefore(hm, s);
+})();</script><!-- End Baidu Analytics --><link rel="icon" href="/images/favicon.png"><link rel="stylesheet" href="/style/common/bulma.css"><link rel="stylesheet" href="/style/base.css"><link rel="stylesheet" href="/style/common/helper.css"><script src="/js/common.js"></script><link rel="stylesheet" href="/style/post.css"><link rel="stylesheet" href="/style/themes/highlight-theme-light.css"><script src="/js/highlight.pack.js"></script><meta name="description" content="前言本文仅供学习探讨之用，如果侵犯了您的权益请联系我删除。
+工具
+Visual Studio Code
+Spy++
+
+效果
+子类化窗口绘制背景对于背景的绘制，我们可以通过子类化窗口然后拦截WM_ERASEBKGND消息来实现，也就是说在窗口背景需要被重绘的时候，我们拦截这个消息，然后绘制自己的背景。
+具体的描述可以看：WM_ERASEBKGND。
+具体实现如下：
+子类化窗口void HackRoutine(HMODULE selfModuleHandle)
+&amp;#123;
+    HWND notepadWindowHandle = nullptr;
+
+    // 先遍历自身获取主窗口句柄
+    ::EnumWindows(
+        [](HWND windowHandle, LPARAM lPa.."><meta name="generator" content="Hexo 6.1.0"><link rel="alternate" href="/atom.xml" title="Bzi-Han的博客" type="application/atom+xml">
+</head><body class="is-flex is-flex-direction-column"><header class="header-widget is-flex-shrink-0 is-hidden-mobile"><div class="container is-fullhd is-flex is-justify-content-space-between is-align-items-center is-full-height"><section class="is-hidden-mobile is-flex-shrink-0"><h2><a href="/">Bzi-Han's blog</a></h2></section><h3 class="is-hidden-mobile is-family-serif is-full-height is-flex is-align-items-center is-flex-shrink-0"><div class="is-full-height" id="postTopic"><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">[编程] 装逼技能之Hook记事本(Notepad)实现自定义文档&quot;水印&quot;或背景</p><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">点击返回顶部</p></div></h3><aside class="is-flex-shrink-0"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></aside></div></header><header class="is-flex header-widget is-flex-shrink-0 is-align-items-center is-justify-content-center is-hidden-tablet"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></header><main><main class="container is-max-widescreen content section post-page pt-4 px-4"><div class="columns is-flex-desktop is-justify-content-center is-flex-direction-row-reverse"><div class="column is-3 is-hidden-mobile"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B7%A5%E5%85%B7"><span class="toc-text">工具</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%95%88%E6%9E%9C"><span class="toc-text">效果</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AD%90%E7%B1%BB%E5%8C%96%E7%AA%97%E5%8F%A3%E7%BB%98%E5%88%B6%E8%83%8C%E6%99%AF"><span class="toc-text">子类化窗口绘制背景</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AD%90%E7%B1%BB%E5%8C%96%E7%AA%97%E5%8F%A3"><span class="toc-text">子类化窗口</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B0%B4%E5%8D%B0-%E8%83%8C%E6%99%AF-%E7%BB%98%E5%88%B6"><span class="toc-text">水印(背景)绘制</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Hook%E6%96%87%E6%9C%AC%E7%BB%98%E5%88%B6%E8%A7%A3%E5%86%B3%E8%A6%86%E7%9B%96%E9%97%AE%E9%A2%98"><span class="toc-text">Hook文本绘制解决覆盖问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%80%8F%E6%98%8E%E9%80%89%E4%B8%AD%E8%83%8C%E6%99%AF"><span class="toc-text">透明选中背景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%87%AA%E5%8A%A8%E6%B3%A8%E5%85%A5"><span class="toc-text">自动注入</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%8C%E6%95%B4%E4%BB%A3%E7%A0%81"><span class="toc-text">完整代码</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BB%93%E8%AF%AD"><span class="toc-text">结语</span></a></li></ol></div><div class="column is-9"><header class="my-4"></header><h1 class="mt-0 mb-1 is-family-serif" id="postTitle">[编程] 装逼技能之Hook记事本(Notepad)实现自定义文档&quot;水印&quot;或背景</h1><time class="has-text-grey" datetime="2025-02-07T15:14:48.000Z">2025-02-07</time><article class="mt-2 post-content"><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>本文仅供学习探讨之用，如果侵犯了您的权益请联系我删除。</p>
+<h2 id="工具"><a href="#工具" class="headerlink" title="工具"></a>工具</h2><ol>
+<li><a target="_blank" rel="noopener" href="https://code.visualstudio.com/" title="Visual Studio Code Official">Visual Studio Code</a></li>
+<li><a target="_blank" rel="noopener" href="https://learn.microsoft.com/en-us/visualstudio/debugger/how-to-start-spy-increment?view=vs-2022" title="Spy++ Official">Spy++</a></li>
+</ol>
+<h2 id="效果"><a href="#效果" class="headerlink" title="效果"></a>效果</h2><p><img src="/images/1650222203.png" alt="水印效果图"></p>
+<h2 id="子类化窗口绘制背景"><a href="#子类化窗口绘制背景" class="headerlink" title="子类化窗口绘制背景"></a>子类化窗口绘制背景</h2><p>对于背景的绘制，我们可以通过子类化窗口然后拦截<code>WM_ERASEBKGND</code>消息来实现，也就是说在窗口背景需要被重绘的时候，我们拦截这个消息，然后绘制自己的背景。</p>
+<p>具体的描述可以看：<a target="_blank" rel="noopener" href="https://learn.microsoft.com/en-us/windows/win32/winmsg/wm-erasebkgnd" title="WM_ERASEBKGND">WM_ERASEBKGND</a>。</p>
+<p>具体实现如下：</p>
+<h3 id="子类化窗口"><a href="#子类化窗口" class="headerlink" title="子类化窗口"></a>子类化窗口</h3><pre><code class="cpp">void HackRoutine(HMODULE selfModuleHandle)
+&#123;
+    HWND notepadWindowHandle = nullptr;
+
+    // 先遍历自身获取主窗口句柄
+    ::EnumWindows(
+        [](HWND windowHandle, LPARAM lParam) -&gt; BOOL
+        &#123;
+            DWORD processId = 0;
+
+            ::GetWindowThreadProcessId(windowHandle, &amp;processId);
+            if (processId == ::GetCurrentProcessId())
+            &#123;
+                *reinterpret_cast&lt;HWND *&gt;(lParam) = windowHandle;
+
+                return FALSE;
+            &#125;
+
+            return TRUE;
+        &#125;,
+        reinterpret_cast&lt;LPARAM&gt;(&amp;notepadWindowHandle));
+    if (nullptr == notepadWindowHandle)
+    &#123;
+        ::OutputDebugString(_T(&quot;[!] Failed to find Notepad window handle\n&quot;));
+        return;
+    &#125;
+
+    // 再获取编辑器窗口句柄
+    auto editControlHandle = ::FindWindowEx(notepadWindowHandle, nullptr, _T(&quot;Edit&quot;), nullptr);
+    if (nullptr == editControlHandle)
+    &#123;
+        ::OutputDebugString(_T(&quot;[!] Failed to find Edit control handle\n&quot;));
+        return;
+    &#125;
+
+    // 子类化窗口，设置为我们自定义的窗口过程 WndProcHook
+    WndProcOriginal = reinterpret_cast&lt;decltype(WndProcOriginal)&gt;(
+        ::SetWindowLongPtr(
+            editControlHandle,
+            GWLP_WNDPROC,
+            reinterpret_cast&lt;LONG_PTR&gt;(WndProcHook)));
+    if (nullptr == WndProcOriginal)
+    &#123;
+        ::OutputDebugString(_T(&quot;[!] Failed to set WndProcHook\n&quot;));
+        return;
+    &#125;
+
+    // 标记窗口区域为无效，手动触发一次重绘
+    //   第三个参数决定是否发送 WM_ERASEBKGND 消息，所以必须为TRUE
+    ::InvalidateRect(editControlHandle, nullptr, TRUE);
+&#125;
+</code></pre>
+<p>然后在<code>WndProcHook</code>中处理<code>WM_ERASEBKGND</code>消息和<code>WM_SIZE</code>：</p>
+<pre><code class="cpp">switch (uMsg)
+&#123;
+case WM_ERASEBKGND:
+&#123;
+    // 创建背景图相关资源
+    CreateBackgroundImage(hWnd, reinterpret_cast&lt;HDC&gt;(wParam));
+
+    // 获取窗口区域信息
+    RECT windowRect&#123;&#125;;
+    ::GetClientRect(hWnd, &amp;windowRect);
+
+    // 将我们绘制好的背景图绘制(复制)到窗口中
+    //   s_backgroundMDC: 背景图对应的 内存设备上下文句柄(MDC)
+    ::BitBlt(
+        reinterpret_cast&lt;HDC&gt;(wParam),
+        windowRect.left, windowRect.top, windowRect.right, windowRect.bottom,
+        s_backgroundMDC,
+        windowRect.left, windowRect.top, SRCCOPY);
+
+    // NOTE: 这里用ReleaseDC释放 HDC 资源，使得后续不被WM_PAINT再次绘制背景而覆盖掉我们绘制的水印，权宜之计
+    ::ReleaseDC(hWnd, reinterpret_cast&lt;HDC&gt;(wParam));
+
+    return TRUE;
+&#125;
+case WM_SIZE: // 窗口大小改变时就会触发WM_SIZE消息
+&#123;
+    // 销毁背景图相关资源
+    DestroyBackgroundImage();
+&#125;
+&#125;
+</code></pre>
+<p>到这里准备工作就完成了，接下来就是绘制水印了。</p>
+<h3 id="水印-背景-绘制"><a href="#水印-背景-绘制" class="headerlink" title="水印(背景)绘制"></a>水印(背景)绘制</h3><pre><code class="cpp">constexpr int fontSize = 200; // 字体大小
+constexpr int fontExtra = 16; // 字符间距
+constexpr int watermarkTextLength = ...; // 水印文本长度
+// 水印字体
+static std::unique_ptr&lt;void, decltype(&amp;::DeleteObject)&gt; watermarkFont(
+    ::CreateFont(fontSize, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, _T(&quot;Arial&quot;)),
+    &amp;::DeleteObject);
+RECT windowRect&#123;&#125;;
+
+windowRect.right = width;
+windowRect.bottom = height;
+
+// 填充白色背景
+::FillRect(s_backgroundMDC, &amp;windowRect, reinterpret_cast&lt;HBRUSH&gt;(::GetStockObject(WHITE_BRUSH)));
+// 设置文本背景为透明
+::SetBkMode(s_backgroundMDC, TRANSPARENT);
+// 设置文本颜色为灰色
+::SetTextColor(s_backgroundMDC, RGB(230, 230, 230));
+// 设置文本字体
+::SelectObject(s_backgroundMDC, watermarkFont.get());
+// 设置文本字符间距
+::SetTextCharacterExtra(s_backgroundMDC, fontExtra);
+
+// 由于DrawText进行居中绘制时字符间距不参与计算，所以这里手动调整一下窗口区域宽度，使得文本居中
+windowRect.right -= (watermarkTextLength - 1) * fontExtra;
+// 绘制水印文本
+::DrawText(s_backgroundMDC, NAME_OR_PATH.data(), watermarkTextLength, &amp;windowRect, DT_SINGLELINE | DT_CENTER | DT_VCENTER);
+</code></pre>
+<p>是不是非常的简单？然后我们注入到记事本中看一下效果。</p>
+<p><img src="/images/1650222204.gif" alt="水印绘制效果"></p>
+<p>可以看到效果是有的。但是当输入或者选择文本时，由于文本绘制会带上背景色(默认白色)，对应行的背景就会被覆盖掉。</p>
+<p>要解决这个问题，我们必须Hook文本绘制，在绘制前先用对应行的背景图来对当前行进行填充(擦除)，然后将文本的背景色设置为透明(SetBkMode)，最后再绘制文本。</p>
+<p>也就是相当于我们把原本的白色填充背景改成了我们自定义的背景图填充。</p>
+<p>然后我们再对<code>FillRect</code>进行Hook，通过填充范围判断是否为背景填充然后做对应的操作。</p>
+<p>相当于把之前<code>WM_ERASEBKGND</code>消息里的操作给搬过来了，并且兼容<code>WM_PAINT</code>消息，不需要再调用<code>ReleaseDC</code>释放 HDC 资源了。</p>
+<h2 id="Hook文本绘制解决覆盖问题"><a href="#Hook文本绘制解决覆盖问题" class="headerlink" title="Hook文本绘制解决覆盖问题"></a>Hook文本绘制解决覆盖问题</h2><p>具体实现如下：</p>
+<pre><code class="cpp">BOOL WINAPI ExtTextOutWHook(HDC hdc, int x, int y, UINT options, CONST RECT *lprect, LPCWSTR lpString, UINT c, CONST INT *lpDx)
+&#123;
+    // 检查当前是否为编辑器窗口
+    auto hWnd = ::WindowFromDC(hdc);
+    if (nullptr == hWnd || s_editControlHandle != hWnd || nullptr == lprect || nullptr == s_backgroundMDC)
+        return ExtTextOutWOriginal(hdc, x, y, options, lprect, lpString, c, lpDx);
+
+    // 获取窗口区域信息
+    RECT windowRect&#123;&#125;;
+    ::GetClientRect(hWnd, &amp;windowRect);
+
+    // 去除 ETO_OPAQUE 选项，使得文本绘制时不填充背景
+    if (options &amp; ETO_OPAQUE)
+        options &amp;= ~ETO_OPAQUE;
+
+    // 用背景图填充当前行
+    ::BitBlt(
+        hdc,
+        lprect-&gt;left,
+        lprect-&gt;top,
+        lprect-&gt;right - lprect-&gt;left,
+        lprect-&gt;bottom - lprect-&gt;top,
+        s_backgroundMDC,
+        lprect-&gt;left % windowRect.right,
+        lprect-&gt;top % windowRect.bottom,
+        SRCCOPY);
+
+    // 设置文本背景为透明
+    int oldMode = 0;
+    // 这里判断当前绘制文本的背景色是否为白色，如果是则设置文本背景为透明，否则保持原样避免选中文本显示&quot;错误&quot;
+    //   选中文本的背景色为 0xd77800 (蓝色)
+    bool isNeedToSetBkMode = 0xffffff == ::GetBkColor(hdc);
+    if (isNeedToSetBkMode)
+        oldMode = ::SetBkMode(hdc, TRANSPARENT);
+
+    // 绘制文本
+    auto result = ExtTextOutWOriginal(hdc, x, y, options, lprect, lpString, c, lpDx);
+
+    // 恢复文本背景
+    if (isNeedToSetBkMode)
+        ::SetBkMode(hdc, oldMode);
+
+    return result;
+&#125;
+
+int WINAPI FillRectHook(HDC hdc, CONST RECT *lprc, HBRUSH hbr)
+&#123;
+    // 检查当前是否为编辑器窗口
+    auto hWnd = ::WindowFromDC(hdc);
+    if (nullptr == hWnd || s_editControlHandle != hWnd || nullptr == lprc || nullptr == s_backgroundMDC)
+        return FillRectOriginal(hdc, lprc, hbr);
+
+    // 获取窗口区域信息
+    RECT windowRect&#123;&#125;;
+    ::GetClientRect(hWnd, &amp;windowRect);
+
+    // 判断是否不为背景填充
+    if (0 != lprc-&gt;left || 0 != lprc-&gt;top || windowRect.right != lprc-&gt;right || windowRect.bottom != lprc-&gt;bottom)
+        return FillRectOriginal(hdc, lprc, hbr);
+
+    // 用背景图填充背景
+    return ::BitBlt(hdc, 0, 0, windowRect.right, windowRect.bottom, s_backgroundMDC, 0, 0, SRCCOPY);
+&#125;
+</code></pre>
+<p>然后再来看下效果：</p>
+<p><img src="/images/1650222205.gif" alt="水印绘制效果"></p>
+<p>可以看到，文本在输入时不会再覆盖水印背景了。</p>
+<p>不过滚动之后发现水印会跟着滚动，这是因为系统只会更新由<code>ScrollDC</code>函数返回的更新区域，详细可以看<a target="_blank" rel="noopener" href="https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-scrolldc#remarks" title="ScrollDC">ScrollDC</a>。</p>
+<p>所以我们还需要Hook<code>ScrollDC</code>函数，并替换返回的更新区域，使得背景标记为需要更新。</p>
+<pre><code class="cpp">BOOL WINAPI ScrollDCHook(HDC hdc, int dx, int dy, CONST RECT *lprc, CONST RECT *lprcClip, HRGN hrgnUpdate, LPRECT lprcUpdate)
+&#123;
+    auto hWnd = ::WindowFromDC(hdc);
+    if (nullptr == hWnd || s_editControlHandle != hWnd || nullptr == lprc || nullptr == s_backgroundMDC)
+        return ScrollDCOriginal(hdc, dx, dy, lprc, lprcClip, hrgnUpdate, lprcUpdate);
+
+    auto result = ScrollDCOriginal(hdc, dx, dy, lprc, lprcClip, hrgnUpdate, lprcUpdate);
+
+    // 默认更新区域为整个窗口，可以按需修改
+    ::GetClientRect(hWnd, lprcUpdate);
+
+    return result;
+&#125;
+</code></pre>
+<p>弄好之后再来看下效果：</p>
+<p><img src="/images/1650222206.gif" alt="水印绘制效果"></p>
+<p>可以看到水印已经不再会随着滚动而滚动了。</p>
+<p>顺便测试一下图片背景：</p>
+<p><img src="/images/1650222207.png" alt="图片背景绘制效果"></p>
+<h2 id="透明选中背景"><a href="#透明选中背景" class="headerlink" title="透明选中背景"></a>透明选中背景</h2><p>现在选中文本是用<code>SetBkColor</code>的颜色填充(蓝色 #0078D7)的，也就是选中文本时选中区域的背景色是会覆盖掉背景图。</p>
+<p>我们先创建一个额外的MDC备用</p>
+<pre><code class="cpp">if (nullptr == s_selectedMDC)
+&#123;
+    s_selectedMDC = ::CreateCompatibleDC(hdc);
+    if (nullptr == s_selectedMDC)
+    &#123;
+        ::OutputDebugString(_T(&quot;[!] Failed to create selected compatible DC\n&quot;));
+        exit(1);
+    &#125;
+
+    RECT windowRect&#123;&#125;;
+    if (!::GetClientRect(hWnd, &amp;windowRect))
+    &#123;
+        ::OutputDebugString(_T(&quot;[!] Failed to get client rect for selected dc\n&quot;));
+        exit(1);
+    &#125;
+
+    s_selectedHBM = ::CreateCompatibleBitmap(hdc, windowRect.right, windowRect.bottom);
+    if (nullptr == s_selectedHBM)
+    &#123;
+        ::OutputDebugString(_T(&quot;[!] Failed to create selected compatible bitmap\n&quot;));
+        exit(1);
+    &#125;
+
+    s_selectedBrush = ::CreateSolidBrush(0xd77800);
+    if (nullptr == s_selectedBrush)
+    &#123;
+        ::OutputDebugString(_T(&quot;[!] Failed to create selected brush\n&quot;));
+        exit(1);
+    &#125;
+
+    ::SelectObject(s_selectedMDC, s_selectedHBM);
+&#125;
+</code></pre>
+<p>然后判断背景色是否为<code>#0078D7</code>，如果是，我们就在额外的MDC的对应行填充蓝色背景色。</p>
+<p>之后先将背景图绘制到HDC上，再通过<code>AlphaBlend</code>并设置透明度将额外的MDC绘制到HDC上，这样选中文本时选中的背景色看起来就会是半透明的，也就不会覆盖掉背景图了。</p>
+<p>具体实现如下：</p>
+<pre><code class="cpp">BOOL WINAPI ExtTextOutWHook(HDC hdc, int x, int y, UINT options, CONST RECT *lprect, LPCWSTR lpString, UINT c, CONST INT *lpDx)
+&#123;
+    auto hWnd = ::WindowFromDC(hdc);
+    if (nullptr == hWnd || s_editControlHandle != hWnd || nullptr == lprect || nullptr == s_backgroundMDC)
+        return ExtTextOutWOriginal(hdc, x, y, options, lprect, lpString, c, lpDx);
+
+    RECT windowRect&#123;&#125;;
+    ::GetClientRect(hWnd, &amp;windowRect);
+
+    if (options &amp; ETO_OPAQUE)
+        options &amp;= ~ETO_OPAQUE;
+
+    ::BitBlt(
+        hdc,
+        lprect-&gt;left,
+        lprect-&gt;top,
+        lprect-&gt;right - lprect-&gt;left,
+        lprect-&gt;bottom - lprect-&gt;top,
+        s_backgroundMDC,
+        lprect-&gt;left % windowRect.right,
+        lprect-&gt;top % windowRect.bottom,
+        SRCCOPY);
+
+    if (0xd77800 == ::GetBkColor(hdc))
+    &#123;
+        constexpr BLENDFUNCTION blendFunction&#123;
+            .BlendOp = AC_SRC_OVER,
+            .BlendFlags = 0,
+            .SourceConstantAlpha = SELECTED_TEXT_BACKGROUND_ALPHA,
+            .AlphaFormat = AC_SRC_OVER&#125;;
+
+        ::FillRect(s_selectedMDC, lprect, s_selectedBrush);
+
+        ::AlphaBlend(
+            hdc,
+            lprect-&gt;left,
+            lprect-&gt;top,
+            lprect-&gt;right - lprect-&gt;left,
+            lprect-&gt;bottom - lprect-&gt;top,
+            s_selectedMDC,
+            lprect-&gt;left % windowRect.right,
+            lprect-&gt;top % windowRect.bottom,
+            lprect-&gt;right - lprect-&gt;left,
+            lprect-&gt;bottom - lprect-&gt;top,
+            blendFunction);
+    &#125;
+
+    auto oldMode = ::SetBkMode(hdc, TRANSPARENT);
+
+    auto result = ExtTextOutWOriginal(hdc, x, y, options, lprect, lpString, c, lpDx);
+
+    ::SetBkMode(hdc, oldMode);
+
+    return result;
+&#125;
+</code></pre>
+<p>然后来看一下对比效果：</p>
+<table>
+<thead>
+<tr>
+<th><img src="/images/1650222208.png" alt="不透明选中背景"></th>
+<th><img src="/images/1650222209.png" alt="透明选中背景"></th>
+</tr>
+</thead>
+</table>
+<p>看着效果还是可以的。</p>
+<h2 id="自动注入"><a href="#自动注入" class="headerlink" title="自动注入"></a>自动注入</h2><p>最后再弄个自动注入的，方便装逼，代码这里就不贴出来了，有兴趣可以自己看下完整代码。</p>
+<p>设定是不给参数则启动一个<code>notepad.exe</code>并且自动注入。</p>
+<p>如果给<code>--daemon</code>或<code>-d</code>参数则启动一个后台进程，然后轮询查找<code>notepad.exe</code>进程自动注入，每个进程仅注入一次。</p>
+<p><img src="/images/1650222210.gif" alt="自动注入效果"></p>
+<h2 id="完整代码"><a href="#完整代码" class="headerlink" title="完整代码"></a>完整代码</h2><p>完整代码已经上传到Github，有兴趣的可以自己查看。</p>
+<p><a href="xxx">xxx</a></p>
+<h2 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h2><p><del>其实想一想如果把<code>ExtTextOutW</code>替换成<code>PolyTextOutW</code>好像可以强行把Edit控件变成富文本编辑框。</del></p>
+<p>获取需要渲染的文本然后通过染色规则计算出对应字符的颜色，再通过<code>PolyTextOutW</code>绘制出来（那我为什么不直接写个DX版的RichEdit呢.jpg）。</p>
+<p><img src="/images/sticker_smile.jpg" alt="sticker_smile.jpg"></p>
+<iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=330 height=86 src="//music.163.com/outchain/player?type=2&id=22730069&auto=1&height=66"></iframe>
+
+<p>那就这样了，有缘再见~</p>
+</article><section class="jump-container is-flex is-justify-content-space-between my-6"><!-- em is empty placeholder--><em></em><a class="button is-default" href="/2025/01/21/%E7%AC%94%E8%AE%B0-%E5%85%B3%E4%BA%8E%E5%BE%AE%E4%BF%A1%E5%85%AC%E4%BC%97%E5%B9%B3%E5%8F%B0%E7%94%B3%E8%AF%B7%E7%9A%84%E4%B8%80%E4%BA%9B%E5%9D%91/" title="[笔记] 关于微信公众平台申请的一些坑"><span class="has-text-weight-semibold">下一页: [笔记] 关于微信公众平台申请的一些坑</span><i class="iconfont icon-next ml-2 has-text-grey"></i></a></section><article class="mt-6 comment-container"><script async repo="Bzi-Han/bzi-han.github.io" src="https://utteranc.es/client.js" issue-term="pathname" theme="preferred-color-scheme"></script></article></div></div></main></main><footer class="is-flex is-flex-direction-column is-align-items-center is-flex-shrink-0 is-family-serif"><section class="sns-container"><!-- Github--><a title="github" target="_blank" rel="noopener nofollow" href="//github.com/Bzi-Han"><i class="iconfont icon-github"></i></a><!-- Ins--><!-- RSS--><!-- 知乎--><!-- 领英--><!-- 脸书--></section><p><span>Copyright ©</span><span> Bzi-Han 2025</span></p><div class="is-flex is-justify-content-center is-flex-wrap-wrap"><p>Powered by Hexo &verbar;&nbsp;</p><p class="is-flex is-justify-content-center"><a title="Hexo theme author" target="_blank" rel="noopener" href="//github.com/haojen">Theme by Haojen&nbsp;</a></p><div style="margin-top: 2px"><a class="github-button" title="github-button" target="_blank" rel="noopener" href="https://github.com/haojen/hexo-theme-Claudia" data-color-scheme="no-preference: light; light: light; dark: dark;" data-show-count="true"></a></div></div><div><span></span></div></footer><script async defer src="https://buttons.github.io/buttons.js"></script><script src="/js/post.js"></script></body></html>
