@@ -16,7 +16,7 @@ var hm = document.createElement("script");
 hm.src = "//hm.baidu.com/hm.js?" + 'acc600f52de48f3cdbea41a9971e8278';
 var s = document.getElementsByTagName("script")[0];
 s.parentNode.insertBefore(hm, s);
-})();</script><!-- End Baidu Analytics --><link rel="icon" href="/images/favicon.png"><link rel="stylesheet" href="/style/common/bulma.css"><link rel="stylesheet" href="/style/base.css"><link rel="stylesheet" href="/style/common/helper.css"><script src="/js/common.js"></script><link rel="stylesheet" href="/style/post.css"><link rel="stylesheet" href="/style/themes/highlight-theme-light.css"><script src="/js/highlight.pack.js"></script><meta name="description" content="前言本文仅供学习探讨之用，如果侵犯了您的权益请联系我删除。
+})();</script><!-- End Baidu Analytics --><link rel="canonical" href="https://blog.bzi-han.top/2024/04/20/%E7%BC%96%E7%A8%8B-Android-libsu-%E6%94%B9%E9%80%A0%E5%AF%B9NativeBridge%E8%BF%9B%E8%A1%8C%E6%94%AF%E6%8C%81/index.html"><link rel="icon" href="/images/favicon.png"><link rel="stylesheet" href="/style/common/bulma.css"><link rel="stylesheet" href="/style/base.css"><link rel="stylesheet" href="/style/common/helper.css"><script src="/js/common.js"></script><link rel="stylesheet" href="/style/post.css"><link rel="stylesheet" href="/style/themes/highlight-theme-light.css"><script src="/js/highlight.pack.js"></script><meta name="description" content="前言本文仅供学习探讨之用，如果侵犯了您的权益请联系我删除。
 需求背景前段时间搞一个东西用到了libsu，不得不说用起来还是挺舒服的，直接代码全在一个Project里，然后只需要关心业务，不用管底层的实现，很方便。
 后来在模拟器上跑发现跑不起来，情景就是APK没有提供x86_64的so的情况下在root进程(RootService)中去加载arm64-v8a的so，然后因为不同架构所以会加载失败，这个时候去调用so的接口就会寄掉，因为没有实现嘛。
 当然能提供x86_64的so最好，但是有些情况提供不了，比如我的情况就是用了Paddle Lite库，然后按照官方原话这个库仅支持arm64-v8a，说是搞了很多优化，所以没得办法。
