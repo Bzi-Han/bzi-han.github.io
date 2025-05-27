@@ -16,7 +16,7 @@ var hm = document.createElement("script");
 hm.src = "//hm.baidu.com/hm.js?" + 'acc600f52de48f3cdbea41a9971e8278';
 var s = document.getElementsByTagName("script")[0];
 s.parentNode.insertBefore(hm, s);
-})();</script><!-- End Baidu Analytics --><link rel="canonical" href="https://blog.bzi-han.top/2025/05/10/%E7%BC%96%E7%A8%8B-C-%E7%BC%96%E8%AF%91%E6%97%B6%E9%9A%8F%E6%9C%BA%E6%95%B0%E7%94%9F%E6%88%90%E4%BB%A5%E5%8F%8A%E5%BA%94%E7%94%A8%E4%BA%8E%E5%AD%97%E7%AC%A6%E4%B8%B2%E6%B7%B7%E6%B7%86/index.html"><link rel="icon" href="/images/favicon.png"><link rel="stylesheet" href="/style/common/bulma.css"><link rel="stylesheet" href="/style/base.css"><link rel="stylesheet" href="/style/common/helper.css"><script src="/js/common.js"></script><link rel="stylesheet" href="/style/post.css"><link rel="stylesheet" href="/style/themes/highlight-theme-light.css"><script src="/js/highlight.pack.js"></script><meta name="description" content="前言本文仅供学习探讨之用，如果侵犯了您的权益请联系我删除。
+})();</script><!-- End Baidu Analytics --><link rel="icon" href="/images/favicon.png"><link rel="stylesheet" href="/style/common/bulma.css"><link rel="stylesheet" href="/style/base.css"><link rel="stylesheet" href="/style/common/helper.css"><script src="/js/common.js"></script><link rel="stylesheet" href="/style/post.css"><link rel="stylesheet" href="/style/themes/highlight-theme-light.css"><script src="/js/highlight.pack.js"></script><meta name="description" content="前言本文仅供学习探讨之用，如果侵犯了您的权益请联系我删除。
 原理一般来说随机数种子使用std::random_device就好，它是基于硬件熵（如果支持）的随机数种子生成器，效果是比较不错的。
 它的底层原理是调用 x86 指令集扩展指令RDRAND，如果硬件不支持，则回退到使用/dev/random或者/dev/urandom。
 感兴趣的话可以自行阅读 Intel 白皮书或简单参考：https://www.uops.info/html-instr/RDSEED_R64.html
